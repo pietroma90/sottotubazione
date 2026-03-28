@@ -46,7 +46,8 @@ public class ConfigRuleHandler extends RuleHandler {
                         ctx.getMessage().addToWarning("Per la seguente tratta (" + ctx.getTratta().getPk_prj_lines_trenches() + "), " +
                                 "all'interno dell'elemento (" + parentDuctItem.getId() + ", " + parentDuctItem.getShort_desc_name() + ") " +
                                 "non è stato possibile sotto-tubare il seguente elemento  (" + targetDuctItem.getId() + ", " + targetDuctItem.getShort_desc_name() + ").");
-                    }
+                            return;
+                            }
                     targetDuctItem.setParent_id(parentDuctItem.getId());
                     targetDuctItem.set_child(true);
                     parentDuctItem.incrementChildCount();
