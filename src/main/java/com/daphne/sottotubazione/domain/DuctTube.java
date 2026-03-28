@@ -14,12 +14,12 @@ public class DuctTube {
     private Long fk_mat_duct;
     private Integer exsternal_diameter;
     private Long parent_id;
-    private Integer childCount;
+    private int childCount = 0;  // fix: inizializzato a 0 per evitare NullPointerException in incrementChildCount()
     private boolean is_new;
     private boolean is_child;
     private String short_desc_name;
 
     public void incrementChildCount() {
-        this.childCount = this.childCount + 1;
+        this.childCount++;
     }
 }

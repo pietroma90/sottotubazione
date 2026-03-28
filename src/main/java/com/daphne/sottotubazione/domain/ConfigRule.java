@@ -12,7 +12,6 @@ import java.util.List;
 @Data
 public class ConfigRule {
 
-
     private Long id;
     private List<Long> fk_lines_types_ids;
     private Long fk_mat_duct_parent;
@@ -43,7 +42,9 @@ public class ConfigRule {
     }
 
     public boolean appliesTo(UndergroundRoute tratta) {
+        // fix: null-check su fk_lines_types_ids per evitare NullPointerException
         if (tratta.getTrenches_types() == null) return false;
+        if (fk_lines_types_ids == null || fk_lines_types_ids.isEmpty()) return false;
         return fk_lines_types_ids.contains(tratta.getTrenches_types());
     }
 }

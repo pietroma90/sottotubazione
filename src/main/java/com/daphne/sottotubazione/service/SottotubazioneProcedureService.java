@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Orchestratore principale della procedura di sotto-tubazione automatica.
@@ -26,7 +27,7 @@ public class SottotubazioneProcedureService {
 
     private final MapperConfigRule mapperConfigRule;
     private final MapperDuct mapperDuct;
-    private final SottotubazioneProcedure SottotubazioneProcedure;
+    private final SottotubazioneProcedure sottotubazioneProcedure;
 
     @Transactional(rollbackFor = Exception.class)
     public ProcedureResult lanciaPerProgetto(Long projectId) {
@@ -43,28 +44,37 @@ public class SottotubazioneProcedureService {
         if (undergroundRoutes.isEmpty() && ductTubes.isEmpty()) {
             return globalResult;
         }
+
+        // Raggruppa i DuctTube per tratta con una Map per evitare il join O(n*m) in memoria
+        Map<Long, List<DuctTube>> ductTubesByTratta = ductTubes.stream()
+                .collect(Collectors.groupingBy(DuctTube::getFk_lines_trenches));
         for (UndergroundRoute undergroundRoute : undergroundRoutes) {
-            for (DuctTube ductTube : ductTubes) {
-                if (Objects.equals(ductTube.getFk_lines_trenches(), undergroundRoute.getPk_prj_lines_trenches()))
-                    undergroundRoute.getDuctTubes().add(ductTube);
-            }
+            List<DuctTube> associated = ductTubesByTratta.getOrDefault(
+                    undergroundRoute.getPk_prj_lines_trenches(), Collections.emptyList());
+            undergroundRoute.getDuctTubes().addAll(associated);
         }
+
         HashMap<String, List<RowUpdateData>> massiveValueToUpdate = new HashMap<>();
         Message message = new Message();
-        processRoute(undergroundRoutes, projectId, rules , massiveValueToUpdate,message);
-        diocane(massiveValueToUpdate);
-        log.info("Procedura completata. Warning: {}",
-                message.getWarning());
+        processRoute(undergroundRoutes, projectId, rules, massiveValueToUpdate, message, globalResult);
+        executeBatchUpdates(massiveValueToUpdate);
+        log.info("Procedura completata. Assegnati: {}, Saltati: {}, Warning: {}",
+                globalResult.getTotalAssigned(), globalResult.getTotalSkipped(), message.getWarning());
         return globalResult;
     }
 
-    private void processRoute(List<UndergroundRoute> routeList, Long projectId, List<ConfigRule> rules, HashMap<String, List<RowUpdateData>> massiveValueToUpdate, Message message) {
+    private void processRoute(List<UndergroundRoute> routeList, Long projectId, List<ConfigRule> rules,
+                              HashMap<String, List<RowUpdateData>> massiveValueToUpdate, Message message,
+                              ProcedureResult globalResult) {
         for (UndergroundRoute route : routeList) {
-            SottotubazioneProcedure.execute(route, rules, projectId, massiveValueToUpdate,message);
+            AssignmentResult result = sottotubazioneProcedure.execute(route, rules, projectId, massiveValueToUpdate, message);
+            if (result != null) {
+                globalResult.merge(result);
+            }
         }
     }
 
-    private void diocane(HashMap<String, List<RowUpdateData>> massiveValueToUpdate){
+    private void executeBatchUpdates(HashMap<String, List<RowUpdateData>> massiveValueToUpdate) {
         massiveValueToUpdate.forEach(mapperDuct::massiveUpdateEntityValuesByFilterValuesBatch);
     }
 }
