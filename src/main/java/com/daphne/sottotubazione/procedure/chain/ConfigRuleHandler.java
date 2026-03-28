@@ -32,7 +32,7 @@ public class ConfigRuleHandler extends RuleHandler {
         Set<DuctTube> parentDuct = ctx.getDuctTube().stream().filter(rule::matchesParent).collect(Collectors.toSet());
         Set<DuctTube> targetDuct = ctx.getDuctTube().stream().filter(rule::matchesTarget).collect(Collectors.toSet());
 
-        String aaa = "Per la seguente tratta ("+ ctx.getTratta().getPk_prj_lines_trenches() + "), " +
+        String aaa = "Per la seguente tratta (" + ctx.getTratta().getPk_prj_lines_trenches() + "), " +
                 "all'interno dell'elemento (" + diocane.getId() + ", " + diocane.getShort_desc_name() + ") " +
                 "non è stato possibile sotto-tubare il seguente elemento  (" + diocane.getId() + ", " + diocane.getShort_desc_name() + ").";
 
@@ -45,20 +45,24 @@ public class ConfigRuleHandler extends RuleHandler {
             AtomicInteger processedRemaining = new AtomicInteger(targetDuct.size());
             while (processedRemaining.intValue() > 0) {
                 targetDuct.forEach(targetDuctItem -> {
-                    if (targetDuctItem.is_child() || parentDuctItem.getChildCount() == rule.getMat_duct_max_number_usable())
+                    if (targetDuctItem.is_child())
                         return;
+                    if (parentDuctItem.getChildCount() == rule.getMat_duct_max_number_usable()) {
+                        ctx.getMessage().addToWarning("Per la seguente tratta (" + ctx.getTratta().getPk_prj_lines_trenches() + "), " +
+                                "all'interno dell'elemento (" + parentDuctItem.getId() + ", " + parentDuctItem.getShort_desc_name() + ") " +
+                                "non è stato possibile sotto-tubare il seguente elemento  (" + targetDuctItem.getId() + ", " + targetDuctItem.getShort_desc_name() + ").");
+                    }
                     targetDuctItem.setParent_id(parentDuctItem.getId());
                     targetDuctItem.set_child(true);
                     parentDuctItem.incrementChildCount();
                     processedRemaining.decrementAndGet();
-                    addBatchUpdate(targetDuctItem.getId(),parentDuctItem.getId(), targetDuctItem.is_new(), parentDuctItem.is_new(), ctx);
+                    addBatchUpdate(targetDuctItem.getId(), parentDuctItem.getId(), targetDuctItem.is_new(), parentDuctItem.is_new(), ctx);
                 });
                 processedRemaining.set(0);
             }
         });
         return passToNext(ctx);
     }
-
 
 
     public void addBatchUpdate(Long id, Long parent_id, boolean isNewTarget, boolean isNewParent, AssignmentContext context) {
