@@ -4,6 +4,7 @@ import com.geowebframework.sottotubazione.RowUpdateData;
 import com.geowebframework.sottotubazione.domain.*;
 import com.geowebframework.sottotubazione.procedure.chain.RuleChainBuilder;
 import com.geowebframework.sottotubazione.procedure.chain.RuleHandler;
+import it.eagleprojects.gisfocommons.utils.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,7 @@ public class SottotubazioneProcedure {
 
     protected final RuleChainBuilder ruleChainBuilder;
 
-    public void execute(UndergroundRoute tratta, List<ConfigRule> rules, Long projectId, HashMap<String, List<RowUpdateData>> massiveValueToUpdate) {
+    public void execute(UndergroundRoute tratta, List<ConfigRule> rules, Long projectId, HashMap<String, List<RowUpdateData>> massiveValueToUpdate, Message message) {
         Optional<RuleHandler> chainHead = ruleChainBuilder.build(rules, tratta);
         if (!chainHead.isPresent()) {
             log.info("Nessuna regola applicabile per tratta {}", tratta.getPk_prj_lines_trenches());
@@ -34,6 +35,7 @@ public class SottotubazioneProcedure {
                 .ductTube(tratta.getDuctTubes())
                 .projectId(projectId)
                 .massiveValueToUpdate(massiveValueToUpdate)
+                .message(message)
                 .build();
         chainHead.get().handle(ctx);
     }

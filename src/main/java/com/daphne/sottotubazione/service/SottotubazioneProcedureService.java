@@ -6,6 +6,7 @@ import com.geowebframework.sottotubazione.procedure.SottotubazioneProcedure;
 import com.geowebframework.sottotubazione.repository.MapperConfigRule;
 import com.geowebframework.sottotubazione.repository.MapperDuct;
 import com.geowebframework.webclient.dao.prj.DaoPrjLinesTrenches;
+import it.eagleprojects.gisfocommons.utils.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -49,16 +50,17 @@ public class SottotubazioneProcedureService {
             }
         }
         HashMap<String, List<RowUpdateData>> massiveValueToUpdate = new HashMap<>();
-        processRoute(undergroundRoutes, projectId, rules , massiveValueToUpdate);
+        Message message = new Message();
+        processRoute(undergroundRoutes, projectId, rules , massiveValueToUpdate,message);
         diocane(massiveValueToUpdate);
-        log.info("Procedura completata. Assegnati: {}, Skippati: {}",
-                globalResult.getTotalAssigned(), globalResult.getTotalSkipped());
+        log.info("Procedura completata. Warning: {}",
+                message.getWarning());
         return globalResult;
     }
 
-    private void processRoute(List<UndergroundRoute> routeList, Long projectId, List<ConfigRule> rules, HashMap<String, List<RowUpdateData>> massiveValueToUpdate) {
+    private void processRoute(List<UndergroundRoute> routeList, Long projectId, List<ConfigRule> rules, HashMap<String, List<RowUpdateData>> massiveValueToUpdate, Message message) {
         for (UndergroundRoute route : routeList) {
-            SottotubazioneProcedure.execute(route, rules, projectId, massiveValueToUpdate);
+            SottotubazioneProcedure.execute(route, rules, projectId, massiveValueToUpdate,message);
         }
     }
 

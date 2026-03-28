@@ -24,7 +24,7 @@ public interface MapperDuct {
             "        FROM r_lines_products occ " +
             "        WHERE occ.fk_parent_new_duct = t.pk_lines_products)         as childCount, " +
             "       t.fk_parent_exi_duct IS NOT NULL or t.fk_parent_new_duct IS NOT NULL as is_child," +
-            "md.short_descript as short_desc_name " +
+            "md.short_descript::text as short_desc_name " +
             "from r_lines_products t " +
             "join mat_duct md on t.fk_mat_duct = md.pk_mat_duct " +
             "where t.drawing =  #{drawing} " +
@@ -47,7 +47,7 @@ public interface MapperDuct {
             "           WHERE occ.fk_parent_exi_duct = t.pk_tubi_esistenti " +
             "       )        as childCount, " +
             "       t.fk_parent_exi_duct IS NOT NULL as is_child," +
-            "t.exsternal_diameter as short_desc_name " +
+            "t.exsternal_diameter::text as short_desc_name " +
             "from tubi_esistenti t " +
             "where t.drawing = #{drawing}")
     List<DuctTube> findNuoviNonOccupatiByTratta(@Param("drawing") Long drawing);
