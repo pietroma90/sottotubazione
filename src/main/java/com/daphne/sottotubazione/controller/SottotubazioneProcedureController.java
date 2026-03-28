@@ -1,12 +1,16 @@
-package com.daphne.sottotubazione.controller;
+package com.geowebframework.sottotubazione.controller;
 
-import com.daphne.sottotubazione.domain.ProcedureResult;
-import com.daphne.sottotubazione.dto.ProcedureResponseDto;
-import com.daphne.sottotubazione.service.SottotubazioneProcedureService;
+
+import com.geowebframework.sottotubazione.domain.ProcedureResult;
+import com.geowebframework.sottotubazione.service.SottotubazioneProcedureService;
+import com.geowebframework.transfer.objects.JsonServerResponse;
+import it.eagleprojects.gisfocommons.service.ServiceCommonsMultiutenza;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.stream.Collectors;
 
 /**
  * Endpoint REST per la procedura di sotto-tubazione automatica.
@@ -14,20 +18,22 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/sottotubazione")
 @RequiredArgsConstructor
 public class SottotubazioneProcedureController {
 
     private final SottotubazioneProcedureService procedureService;
+    private final ServiceCommonsMultiutenza serviceCommonsMultiutenza;
 
     /**
      * POST /api/v1/sottotubazione/assegna/{projectId}
      */
-    @PostMapping("/assegna/{projectId}")
-    public ResponseEntity<ProcedureResponseDto> assegnaSottotubazioni(@PathVariable Long projectId) {
+    @PostMapping("assegnaSottotubazioni")
+    public ResponseEntity<JsonServerResponse> assegnaSottotubazioni() {
+        Long projectId = serviceCommonsMultiutenza.getCorrectDrawing();
         log.info("Richiesta assegnazione sotto-tubazioni per progetto {}", projectId);
         ProcedureResult result = procedureService.lanciaPerProgetto(projectId);
-        ProcedureResponseDto response = ProcedureResponseDto.builder()
+        return (ResponseEntity<JsonServerResponse>) ResponseEntity.ok();
+       /* ProcedureResponseDto response = ProcedureResponseDto.builder()
                 .success(true)
                 .totalAssigned(result.getTotalAssigned())
                 .totalSkipped(result.getTotalSkipped())
@@ -40,17 +46,8 @@ public class SottotubazioneProcedureController {
                         .pkTarget(l.getPkTarget())
                         .targetDescr(l.getTargetDescr())
                         .message(l.getMessage())
-                        .build())
-                    .toList())
+                        .build()).collect(Collectors.toList()))
                 .build();
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * GET /api/v1/sottotubazione/log/{projectId}
-     */
-    @GetMapping("/log/{projectId}")
-    public ResponseEntity<?> getLog(@PathVariable Long projectId) {
-        return ResponseEntity.ok(procedureService.getLogs(projectId));
+        return ResponseEntity.ok(response);*/
     }
 }

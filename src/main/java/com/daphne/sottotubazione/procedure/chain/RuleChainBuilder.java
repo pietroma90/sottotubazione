@@ -1,11 +1,13 @@
-package com.daphne.sottotubazione.procedure.chain;
+package com.geowebframework.sottotubazione.procedure.chain;
 
-import com.daphne.sottotubazione.domain.ConfigRule;
-import com.daphne.sottotubazione.domain.TrattaInterrata;
+import com.geowebframework.sottotubazione.domain.ConfigRule;
+import com.geowebframework.sottotubazione.domain.UndergroundRoute;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Costruisce la catena di RuleHandler a partire dalle ConfigRule ordinate per priority_rules_order.
@@ -13,13 +15,12 @@ import java.util.Optional;
 @Component
 public class RuleChainBuilder {
 
-    public Optional<RuleHandler> build(List<ConfigRule> rules, TrattaInterrata tratta) {
+    public Optional<RuleHandler> build(List<ConfigRule> rules, UndergroundRoute tratta) {
         List<RuleHandler> handlers = rules.stream()
-            .filter(r -> !r.isDeleted() && r.appliesTo(tratta))
-            .sorted((a, b) -> Integer.compare(a.getPriorityRulesOrder(), b.getPriorityRulesOrder()))
+            .filter(r -> !r.is_deleted() && r.appliesTo(tratta))
+            .sorted(Comparator.comparingInt(ConfigRule::getPriority_rules_order))
             .map(ConfigRuleHandler::new)
-            .map(h -> (RuleHandler) h)
-            .toList();
+            .map(h -> (RuleHandler) h).collect(Collectors.toList());
 
         if (handlers.isEmpty()) return Optional.empty();
 

@@ -1,7 +1,8 @@
-package com.daphne.sottotubazione.procedure.chain;
+package com.geowebframework.sottotubazione.procedure.chain;
 
-import com.daphne.sottotubazione.domain.AssignmentResult;
-import com.daphne.sottotubazione.procedure.AssignmentContext;
+
+import com.geowebframework.sottotubazione.domain.AssignmentResult;
+import com.geowebframework.sottotubazione.procedure.AssignmentContext;
 
 import java.util.Optional;
 

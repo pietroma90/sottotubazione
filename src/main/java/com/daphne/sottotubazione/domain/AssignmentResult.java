@@ -1,4 +1,4 @@
-package com.daphne.sottotubazione.domain;
+package com.geowebframework.sottotubazione.domain;
 
 import lombok.Builder;
 import lombok.Data;
@@ -20,8 +20,6 @@ public class AssignmentResult {
 
     private int assignedCount;
     private int skippedCount;
-    private boolean assigned;
-    private boolean parentFull;
 
     public void addLog(ProcedureOutput log) {
         logs.add(log);

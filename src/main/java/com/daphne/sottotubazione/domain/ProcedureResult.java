@@ -1,4 +1,4 @@
-package com.daphne.sottotubazione.domain;
+package com.geowebframework.sottotubazione.domain;
 
 import lombok.Data;
 

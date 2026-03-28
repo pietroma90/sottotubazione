@@ -1,10 +1,15 @@
-package com.daphne.sottotubazione.procedure;
+package com.geowebframework.sottotubazione.procedure;
 
-import com.daphne.sottotubazione.domain.TrattaInterrata;
-import com.daphne.sottotubazione.domain.TuboParent;
-import com.daphne.sottotubazione.domain.TuboTarget;
+import com.geowebframework.sottotubazione.RowUpdateData;
+import com.geowebframework.sottotubazione.domain.UndergroundRoute;
+import com.geowebframework.sottotubazione.domain.DuctTube;
+import it.eagleprojects.gisfocommons.utils.Message;
 import lombok.Builder;
 import lombok.Data;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Oggetto di contesto passato lungo la Chain of Responsibility.
@@ -13,8 +18,9 @@ import lombok.Data;
 @Data
 @Builder
 public class AssignmentContext {
-    private TrattaInterrata tratta;
-    private TuboParent parent;
-    private TuboTarget target;
+    private UndergroundRoute tratta;
+    private Set<DuctTube> ductTube;
     private Long projectId;
+    private HashMap<String, List<RowUpdateData>> massiveValueToUpdate;
+    private Message message = new Message();
 }
