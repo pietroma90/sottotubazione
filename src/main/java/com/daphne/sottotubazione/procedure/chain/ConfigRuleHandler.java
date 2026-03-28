@@ -27,14 +27,9 @@ public class ConfigRuleHandler extends RuleHandler {
 
     @Override
     public Optional<AssignmentResult> handle(AssignmentContext ctx) {
-
-        DuctTube diocane = new DuctTube();
         Set<DuctTube> parentDuct = ctx.getDuctTube().stream().filter(rule::matchesParent).collect(Collectors.toSet());
         Set<DuctTube> targetDuct = ctx.getDuctTube().stream().filter(rule::matchesTarget).collect(Collectors.toSet());
 
-        String aaa = "Per la seguente tratta (" + ctx.getTratta().getPk_prj_lines_trenches() + "), " +
-                "all'interno dell'elemento (" + diocane.getId() + ", " + diocane.getShort_desc_name() + ") " +
-                "non è stato possibile sotto-tubare il seguente elemento  (" + diocane.getId() + ", " + diocane.getShort_desc_name() + ").";
 
         if (parentDuct.isEmpty() || targetDuct.isEmpty()) {
             return passToNext(ctx);

@@ -22,5 +22,6 @@ public class AssignmentContext {
     private Set<DuctTube> ductTube;
     private Long projectId;
     private HashMap<String, List<RowUpdateData>> massiveValueToUpdate;
+    @Builder.Default
     private Message message = new Message();
 }
