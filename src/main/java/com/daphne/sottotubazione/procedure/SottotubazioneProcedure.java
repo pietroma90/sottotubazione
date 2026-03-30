@@ -15,7 +15,6 @@ import java.util.Optional;
 
 /**
  * Template Method: definisce lo scheletro dell'algoritmo di sotto-tubazione.
- * I metodi loadParents() e loadTargets() sono gli hook differenti tra le Strategy.
  */
 @Slf4j
 @RequiredArgsConstructor
@@ -24,11 +23,12 @@ public class SottotubazioneProcedure {
 
     protected final RuleChainBuilder ruleChainBuilder;
 
-    public void execute(UndergroundRoute tratta, List<ConfigRule> rules, Long projectId, HashMap<String, List<RowUpdateData>> massiveValueToUpdate, Message message) {
+    public AssignmentResult execute(UndergroundRoute tratta, List<ConfigRule> rules, Long projectId,
+                                    HashMap<String, List<RowUpdateData>> massiveValueToUpdate, Message message) {
         Optional<RuleHandler> chainHead = ruleChainBuilder.build(rules, tratta);
         if (!chainHead.isPresent()) {
             log.info("Nessuna regola applicabile per tratta {}", tratta.getPk_prj_lines_trenches());
-            return;
+            return null;
         }
         AssignmentContext ctx = AssignmentContext.builder()
                 .tratta(tratta)
@@ -37,6 +37,6 @@ public class SottotubazioneProcedure {
                 .massiveValueToUpdate(massiveValueToUpdate)
                 .message(message)
                 .build();
-        chainHead.get().handle(ctx);
+        return chainHead.get().handle(ctx).orElse(null);
     }
 }

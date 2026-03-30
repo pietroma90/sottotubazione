@@ -70,7 +70,7 @@ public interface MapperDuct {
             @Param("rowUpdateDataList") List<RowUpdateData> rowUpdateDataList
     );
 
-    @Select("select t.pk_prj_lines_trenches , t.name, t.trenches_types " +
+    @Select("select distinct t.pk_prj_lines_trenches , t.name, t.trenches_types " +
             "from prj_lines_trenches t " +
             "join lines_types lt on lt.pk_lines_types =  t.trenches_types " +
             "join procedure_config.r_config_fk_parent_duct r on r.fk_lines_types_ids @> array[lt.pk_lines_types]" +
