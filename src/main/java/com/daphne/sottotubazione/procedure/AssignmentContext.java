@@ -1,27 +1,17 @@
 package com.geowebframework.sottotubazione.procedure;
 
-import com.geowebframework.sottotubazione.RowUpdateData;
-import com.geowebframework.sottotubazione.domain.UndergroundRoute;
-import com.geowebframework.sottotubazione.domain.DuctTube;
-import it.eagleprojects.gisfocommons.utils.Message;
-import lombok.Builder;
-import lombok.Data;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import lombok.Value;
 
 /**
  * Oggetto di contesto passato lungo la Chain of Responsibility.
- * Evita il parameter drilling tra i vari handler.
+ * Aggrega input (immutabile) e output (accumulabile) separando le responsabilita'.
  */
-@Data
-@Builder
+@Value
 public class AssignmentContext {
-    private UndergroundRoute tratta;
-    private Set<DuctTube> ductTube;
-    private Long projectId;
-    private HashMap<String, List<RowUpdateData>> massiveValueToUpdate;
-    @Builder.Default
-    private Message message = new Message();
+    AssignmentInput input;
+    AssignmentOutput output;
+
+    public static AssignmentContext of(AssignmentInput input) {
+        return new AssignmentContext(input, new AssignmentOutput());
+    }
 }

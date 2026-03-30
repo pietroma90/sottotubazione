@@ -1,6 +1,5 @@
 package com.geowebframework.sottotubazione.domain;
 
-
 import lombok.Data;
 
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.List;
  */
 @Data
 public class ConfigRule {
-
 
     private Long id;
     private List<Long> fk_lines_types_ids;
@@ -24,7 +22,6 @@ public class ConfigRule {
     private int mat_duct_max_number_usable;
     private int priority_rules_order;
     private boolean is_deleted;
-
 
     public boolean matchesParent(DuctTube parent) {
         if (fk_mat_duct_parent != null) return fk_mat_duct_parent.equals(parent.getFk_mat_duct());
@@ -44,6 +41,8 @@ public class ConfigRule {
 
     public boolean appliesTo(UndergroundRoute tratta) {
         if (tratta.getTrenches_types() == null) return false;
+        // null-check su fk_lines_types_ids: evita NPE se il mapper non popola la lista
+        if (fk_lines_types_ids == null || fk_lines_types_ids.isEmpty()) return false;
         return fk_lines_types_ids.contains(tratta.getTrenches_types());
     }
 }

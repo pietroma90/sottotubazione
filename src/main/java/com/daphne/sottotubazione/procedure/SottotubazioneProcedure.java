@@ -1,42 +1,56 @@
 package com.geowebframework.sottotubazione.procedure;
 
-import com.geowebframework.sottotubazione.RowUpdateData;
-import com.geowebframework.sottotubazione.domain.*;
+import com.geowebframework.sottotubazione.domain.AssignmentResult;
+import com.geowebframework.sottotubazione.domain.ConfigRule;
+import com.geowebframework.sottotubazione.domain.DuctTube;
+import com.geowebframework.sottotubazione.domain.UndergroundRoute;
 import com.geowebframework.sottotubazione.procedure.chain.RuleChainBuilder;
 import com.geowebframework.sottotubazione.procedure.chain.RuleHandler;
-import it.eagleprojects.gisfocommons.utils.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
- * Template Method: definisce lo scheletro dell'algoritmo di sotto-tubazione.
- * I metodi loadParents() e loadTargets() sono gli hook differenti tra le Strategy.
+ * Esegue la procedura di sotto-tubazione per una singola UndergroundRoute.
+ * Costruisce la Chain of Responsibility tramite RuleChainBuilder,
+ * crea il contesto (input immutabile + output accumulabile) e
+ * restituisce l'AssignmentResult aggregato da tutta la catena.
  */
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class SottotubazioneProcedure {
 
-    protected final RuleChainBuilder ruleChainBuilder;
+    private final RuleChainBuilder ruleChainBuilder;
 
-    public void execute(UndergroundRoute tratta, List<ConfigRule> rules, Long projectId, HashMap<String, List<RowUpdateData>> massiveValueToUpdate, Message message) {
+    public Optional<AssignmentResult> execute(UndergroundRoute tratta, List<ConfigRule> rules, Long projectId) {
         Optional<RuleHandler> chainHead = ruleChainBuilder.build(rules, tratta);
-        if (!chainHead.isPresent()) {
+        if (chainHead.isEmpty()) {
             log.info("Nessuna regola applicabile per tratta {}", tratta.getPk_prj_lines_trenches());
-            return;
+            return Optional.empty();
         }
-        AssignmentContext ctx = AssignmentContext.builder()
+
+        Set<DuctTube> ductTubes = tratta.getDuctTubes() != null
+                ? tratta.getDuctTubes()
+                : new HashSet<>();
+
+        AssignmentInput input = AssignmentInput.builder()
                 .tratta(tratta)
-                .ductTube(tratta.getDuctTubes())
+                .ductTubes(ductTubes)
                 .projectId(projectId)
-                .massiveValueToUpdate(massiveValueToUpdate)
-                .message(message)
+                .rules(rules)
                 .build();
-        chainHead.get().handle(ctx);
+
+        AssignmentContext ctx = AssignmentContext.of(input);
+        Optional<AssignmentResult> result = chainHead.get().handle(ctx);
+
+        // Propaga il batch di update nel result per il service
+        result.ifPresent(r -> r.setBatchUpdates(ctx.getOutput().getBatchUpdates()));
+        return result;
     }
 }
