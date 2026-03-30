@@ -26,7 +26,7 @@ public class SottotubazioneProcedure {
     public AssignmentResult execute(UndergroundRoute tratta, List<ConfigRule> rules, Long projectId,
                                     HashMap<String, List<RowUpdateData>> massiveValueToUpdate, Message message) {
         Optional<RuleHandler> chainHead = ruleChainBuilder.build(rules, tratta);
-        if (chainHead.isEmpty()) {
+        if (!chainHead.isPresent()) {
             log.info("Nessuna regola applicabile per tratta {}", tratta.getPk_prj_lines_trenches());
             return null;
         }

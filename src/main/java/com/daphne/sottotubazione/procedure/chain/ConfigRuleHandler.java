@@ -29,27 +29,27 @@ public class ConfigRuleHandler extends RuleHandler {
     public Optional<AssignmentResult> handle(AssignmentContext ctx) {
         Set<DuctTube> parentDuct = ctx.getDuctTube().stream().filter(rule::matchesParent).collect(Collectors.toSet());
         Set<DuctTube> targetDuct = ctx.getDuctTube().stream().filter(rule::matchesTarget).collect(Collectors.toSet());
-
-
         if (parentDuct.isEmpty() || targetDuct.isEmpty()) {
             return passToNext(ctx);
         }
         parentDuct.forEach(parentDuctItem -> {
+            if (parentDuctItem.isFull())
+                return;
             targetDuct.forEach(targetDuctItem -> {
                 if (targetDuctItem.is_child()) return;
-
                 if (parentDuctItem.getChildCount() >= rule.getMat_duct_max_number_usable()) {
                     ctx.getMessage().addToWarning("Per la seguente tratta (" + ctx.getTratta().getPk_prj_lines_trenches() + "), " +
                             "all'interno dell'elemento (" + parentDuctItem.getId() + ", " + parentDuctItem.getShort_desc_name() + ") " +
                             "non è stato possibile sotto-tubare il seguente elemento  (" + targetDuctItem.getId() + ", " + targetDuctItem.getShort_desc_name() + ").");
                     return;  // ← fondamentale
                 }
-
                 targetDuctItem.setParent_id(parentDuctItem.getId());
                 targetDuctItem.set_child(true);
                 parentDuctItem.incrementChildCount();
                 addBatchUpdate(targetDuctItem.getId(), parentDuctItem.getId(), targetDuctItem.is_new(), parentDuctItem.is_new(), ctx);
             });
+            if (parentDuctItem.getChildCount() == rule.getMat_duct_max_number_usable())
+                parentDuctItem.setFull(true);
         });
         return passToNext(ctx);
     }

@@ -18,6 +18,7 @@ public class DuctTube {
     private boolean is_new;
     private boolean is_child;
     private String short_desc_name;
+    private boolean isFull;
 
     public void incrementChildCount() {
         this.childCount++;
