@@ -1,7 +1,7 @@
-package com.geowebframework.sottotubazione.procedure.chain;
+package com.geowebframework.underPiping.procedure.chain;
 
-import com.geowebframework.sottotubazione.domain.ConfigRule;
-import com.geowebframework.sottotubazione.domain.UndergroundRoute;
+import com.geowebframework.underPiping.domain.ConfigRule;
+import com.geowebframework.underPiping.domain.UndergroundRoute;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -17,13 +17,11 @@ public class RuleChainBuilder {
 
     public Optional<RuleHandler> build(List<ConfigRule> rules, UndergroundRoute tratta) {
         List<RuleHandler> handlers = rules.stream()
-            .filter(r -> !r.is_deleted() && r.appliesTo(tratta))
-            .sorted(Comparator.comparingInt(ConfigRule::getPriority_rules_order))
-            .map(ConfigRuleHandler::new)
-            .map(h -> (RuleHandler) h).collect(Collectors.toList());
+                .filter(r -> !r.is_deleted() && r.appliesTo(tratta))
+                .sorted(Comparator.comparingInt(ConfigRule::getPriority_rules_order))
+                .map(RuleHandler::new).collect(Collectors.toList());
 
         if (handlers.isEmpty()) return Optional.empty();
-
         for (int i = 0; i < handlers.size() - 1; i++) {
             handlers.get(i).setNext(handlers.get(i + 1));
         }

@@ -1,33 +1,43 @@
-package com.geowebframework.sottotubazione.domain;
+package com.geowebframework.underPiping.domain;
 
-import lombok.Builder;
-import lombok.Data;
+import it.eagleprojects.gisfocommons.utils.Message;
+import it.eagleprojects.gisfocommons.utils.RowUpdateData;
+import lombok.*;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * Risultato dell'assegnazione per una singola tratta.
  */
 @Data
-@Builder
+@NoArgsConstructor
 public class AssignmentResult {
 
-    private Long fkTratta;
+    private Message message = new Message();
+    private int assignedCount = 0;
+    private int skippedCount = 0;
+    protected HashMap<String, List<RowUpdateData>> massiveValueToUpdate = new HashMap<>();
 
-    @Builder.Default
-    private List<ProcedureOutput> logs = new ArrayList<>();
+    public void addLog(String log) {
+        message.addToWarning(log);
+    }
 
-    private int assignedCount;
-    private int skippedCount;
-
-    public void addLog(ProcedureOutput log) {
-        logs.add(log);
+    public void incrementAssigned() {
+        assignedCount++;
     }
 
     public void merge(AssignmentResult other) {
-        logs.addAll(other.getLogs());
-        assignedCount += other.getAssignedCount();
-        skippedCount  += other.getSkippedCount();
+        this.message.addToWarning(other.getMessage().getWarning());
+        this.assignedCount += other.getAssignedCount();
+        if (!CollectionUtils.isEmpty(other.getMassiveValueToUpdate())) {
+            other.getMassiveValueToUpdate().forEach((key, list) ->
+                    massiveValueToUpdate
+                            .computeIfAbsent(key, k -> new ArrayList<>())
+                            .addAll(list)
+            );
+        }
     }
 }

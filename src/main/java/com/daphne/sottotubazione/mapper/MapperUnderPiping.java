@@ -1,18 +1,18 @@
-package com.geowebframework.sottotubazione.repository;
+package com.geowebframework.underPiping.mapper;
 
-import com.geowebframework.sottotubazione.RowUpdateData;
-import com.geowebframework.sottotubazione.domain.DuctTube;
-import com.geowebframework.sottotubazione.domain.UndergroundRoute;
-import org.apache.ibatis.annotations.MapKey;
+import com.geowebframework.underPiping.domain.ConfigRule;
+import com.geowebframework.underPiping.domain.DuctTube;
+import com.geowebframework.underPiping.domain.UndergroundRoute;
+import it.eagleprojects.gisfocommons.typehandler.BigIntArrayTypeHandler;
+import it.eagleprojects.gisfocommons.utils.RowUpdateData;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public interface MapperDuct {
+public interface MapperUnderPiping {
 
     @Select("select t.pk_lines_products                                          as id, " +
             "       t.fk_lines_trenches, " +
@@ -27,7 +27,8 @@ public interface MapperDuct {
             "md.short_descript::text as short_desc_name " +
             "from r_lines_products t " +
             "join mat_duct md on t.fk_mat_duct = md.pk_mat_duct " +
-            "where t.drawing =  #{drawing} " +
+            "where t.drawing = #{drawing} " +
+            "and t.fk_lines_trenches is not null " +
             "union all " +
             "select t.pk_tubi_esistenti                                         as id, " +
             "       t.fk_lines_trenches, " +
@@ -49,8 +50,22 @@ public interface MapperDuct {
             "       t.fk_parent_exi_duct IS NOT NULL as is_child," +
             "t.exsternal_diameter::text as short_desc_name " +
             "from tubi_esistenti t " +
-            "where t.drawing = #{drawing}")
+            "where t.drawing = #{drawing} " +
+            "and t.occupato = 0 " +
+            "and t.fk_lines_trenches is not null")
     List<DuctTube> findNuoviNonOccupatiByTratta(@Param("drawing") Long drawing);
+
+
+    @Select("select distinct t.pk_prj_lines_trenches , t.name, t.trenches_types " +
+            "from prj_lines_trenches t " +
+            "join lines_types lt on lt.pk_lines_types =  t.trenches_types " +
+            "join procedure_config.r_config_fk_parent_duct r on r.fk_lines_types_ids @> array[lt.pk_lines_types]" +
+            "where drawing = #{drawing} ")
+    List<UndergroundRoute> retrieveUndergroundRoutesByDrawing(@Param("drawing") Long drawing);
+
+    @Select("select * from procedure_config.r_config_fk_parent_duct where not is_deleted order by priority_rules_order")
+    @Result(column = "fk_lines_types_ids", property = "fk_lines_types_ids" , typeHandler = BigIntArrayTypeHandler.class)
+    List<ConfigRule> findActiveRules();
 
     @Update("<script>" +
             "<foreach collection='rowUpdateDataList' item='rowUpdate' separator=';'>" +
@@ -69,11 +84,4 @@ public interface MapperDuct {
             @Param("tableName") String tableName,
             @Param("rowUpdateDataList") List<RowUpdateData> rowUpdateDataList
     );
-
-    @Select("select t.pk_prj_lines_trenches , t.name, t.trenches_types " +
-            "from prj_lines_trenches t " +
-            "join lines_types lt on lt.pk_lines_types =  t.trenches_types " +
-            "join procedure_config.r_config_fk_parent_duct r on r.fk_lines_types_ids @> array[lt.pk_lines_types]" +
-            "where drawing = #{drawing}")
-    List<UndergroundRoute> retrieveUndergroundRoutesByDrawing(@Param("drawing") Long drawing);
 }

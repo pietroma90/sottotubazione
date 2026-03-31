@@ -1,4 +1,4 @@
-package com.geowebframework.sottotubazione.domain;
+package com.geowebframework.underPiping.domain;
 
 import com.geowebframework.webclient.model.serverDbEntity.prj.PrjLinesTrenches;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package com.geowebframework.sottotubazione.domain;
+package com.geowebframework.underPiping.domain;
 
 
 import lombok.Data;
@@ -11,7 +11,6 @@ import java.util.List;
  */
 @Data
 public class ConfigRule {
-
 
     private Long id;
     private List<Long> fk_lines_types_ids;
@@ -44,6 +43,7 @@ public class ConfigRule {
 
     public boolean appliesTo(UndergroundRoute tratta) {
         if (tratta.getTrenches_types() == null) return false;
+        if (fk_lines_types_ids == null || fk_lines_types_ids.isEmpty()) return false;
         return fk_lines_types_ids.contains(tratta.getTrenches_types());
     }
 }
