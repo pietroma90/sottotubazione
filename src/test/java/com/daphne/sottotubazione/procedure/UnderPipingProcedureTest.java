@@ -6,12 +6,12 @@ import com.geowebframework.underPiping.domain.UndergroundRoute;
 import com.geowebframework.underPiping.procedure.UnderPipingProcedure;
 import com.geowebframework.underPiping.procedure.chain.RuleChainBuilder;
 import com.geowebframework.underPiping.procedure.chain.RuleHandler;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,15 +20,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class UnderPipingProcedureTest {
+public class UnderPipingProcedureTest {
 
     @Mock private RuleChainBuilder ruleChainBuilder;
     @InjectMocks private UnderPipingProcedure underPipingProcedure;
 
-    @Test
-    @DisplayName("Nessun handler costruito dalla chain: deve ritornare Optional.empty")
-    void execute_noChainBuilt_returnsEmpty() {
+    private AutoCloseable mocks;
+
+    @BeforeMethod
+    public void setUp() {
+        mocks = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterMethod
+    public void tearDown() throws Exception {
+        mocks.close();
+    }
+
+    @Test(description = "Nessun handler costruito dalla chain: deve ritornare Optional.empty")
+    public void execute_noChainBuilt_returnsEmpty() {
         UndergroundRoute route = new UndergroundRoute();
         when(ruleChainBuilder.build(any(), any())).thenReturn(Optional.empty());
 
@@ -38,9 +48,8 @@ class UnderPipingProcedureTest {
         verify(ruleChainBuilder).build(List.of(), route);
     }
 
-    @Test
-    @DisplayName("Chain presente: delega al primo handler e ritorna il suo risultato")
-    void execute_chainPresent_delegatesToHandler() {
+    @Test(description = "Chain presente: delega al primo handler e ritorna il suo risultato")
+    public void execute_chainPresent_delegatesToHandler() {
         UndergroundRoute route = new UndergroundRoute();
         ConfigRule rule = new ConfigRule();
         RuleHandler handler = mock(RuleHandler.class);
@@ -55,9 +64,8 @@ class UnderPipingProcedureTest {
         verify(handler).handle(argThat(ctx -> ctx.getTratta() == route));
     }
 
-    @Test
-    @DisplayName("Chain presente ma handler ritorna empty: il risultato è Optional.empty")
-    void execute_chainPresentButHandlerReturnsEmpty_returnsEmpty() {
+    @Test(description = "Chain presente ma handler ritorna empty: il risultato è Optional.empty")
+    public void execute_chainPresentButHandlerReturnsEmpty_returnsEmpty() {
         UndergroundRoute route = new UndergroundRoute();
         RuleHandler handler = mock(RuleHandler.class);
 

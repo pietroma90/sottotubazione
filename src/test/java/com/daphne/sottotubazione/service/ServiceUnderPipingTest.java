@@ -9,13 +9,12 @@ import com.geowebframework.procedureOutput.ProcedureOutput;
 import com.geowebframework.procedureOutput.ProcedureOutputException;
 import com.geowebframework.procedureOutput.ServiceProcedureOutput;
 import it.eagleprojects.gisfocommons.service.ServiceCommonsMultiutenza;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.util.*;
 
@@ -23,8 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class ServiceUnderPipingTest {
+public class ServiceUnderPipingTest {
 
     @Mock private DaoUnderPiping daoUnderPiping;
     @Mock private UnderPipingProcedure underPipingProcedure;
@@ -35,18 +33,25 @@ class ServiceUnderPipingTest {
     @InjectMocks
     private ServiceUnderPiping serviceUnderPiping;
 
+    private AutoCloseable mocks;
+
     private static final Long PROJECT_ID = 42L;
     private static final String STANDARD_LOG_KEY = "warning-under-piping.standard-log";
     private static final String END_PROCEDURE_KEY = "warning-under-piping.end-procedure";
 
-    @BeforeEach
-    void setUp() {
+    @BeforeMethod
+    public void setUp() throws Exception {
+        mocks = MockitoAnnotations.openMocks(this);
         when(serviceCommonsMultiutenza.getCorrectDrawing()).thenReturn(PROJECT_ID);
     }
 
-    @Test
-    @DisplayName("Nessuna regola attiva: deve ritornare il messaggio standard senza interrogare le tratte")
-    void executeUnderPiping_noRules_returnsStandardMessage() throws ProcedureOutputException {
+    @AfterMethod
+    public void tearDown() throws Exception {
+        mocks.close();
+    }
+
+    @Test(description = "Nessuna regola attiva: deve ritornare il messaggio standard senza interrogare le tratte")
+    public void executeUnderPiping_noRules_returnsStandardMessage() throws ProcedureOutputException {
         when(daoUnderPiping.findActiveRules()).thenReturn(Collections.emptyList());
         when(underPipingMessage.getWarningMessage(STANDARD_LOG_KEY)).thenReturn("Nessuna regola.");
 
@@ -57,9 +62,8 @@ class ServiceUnderPipingTest {
         verify(underPipingProcedure, never()).execute(any(), any());
     }
 
-    @Test
-    @DisplayName("Regole presenti ma nessuna tratta: deve ritornare il messaggio standard")
-    void executeUnderPiping_noRoutes_returnsStandardMessage() throws ProcedureOutputException {
+    @Test(description = "Regole presenti ma nessuna tratta: deve ritornare il messaggio standard")
+    public void executeUnderPiping_noRoutes_returnsStandardMessage() throws ProcedureOutputException {
         when(daoUnderPiping.findActiveRules()).thenReturn(List.of(new ConfigRule()));
         when(daoUnderPiping.retrieveUndergroundRoutesByDrawing(PROJECT_ID)).thenReturn(Collections.emptyList());
         when(underPipingMessage.getWarningMessage(STANDARD_LOG_KEY)).thenReturn("Nessuna tratta.");
@@ -70,9 +74,8 @@ class ServiceUnderPipingTest {
         verify(underPipingProcedure, never()).execute(any(), any());
     }
 
-    @Test
-    @DisplayName("Flusso completo: la procedura viene eseguita e si ottiene il messaggio di fine procedura")
-    void executeUnderPiping_fullFlow_callsProcedureAndReturnsEndMessage() throws ProcedureOutputException {
+    @Test(description = "Flusso completo: la procedura viene eseguita e si ottiene il messaggio di fine procedura")
+    public void executeUnderPiping_fullFlow_callsProcedureAndReturnsEndMessage() throws ProcedureOutputException {
         ConfigRule rule = new ConfigRule();
         UndergroundRoute route = new UndergroundRoute();
         route.setPk_prj_lines_trenches(1L);
@@ -94,9 +97,8 @@ class ServiceUnderPipingTest {
         verify(serviceProcedureOutput).writeFileAndUpdateTheEnd(eq(procedureOutput), anyString(), eq(true));
     }
 
-    @Test
-    @DisplayName("La procedura non produce risultati (Optional.empty): nessun merge e il totale rimane a zero")
-    void executeUnderPiping_procedureReturnsEmpty_noMergeOccurs() throws ProcedureOutputException {
+    @Test(description = "La procedura non produce risultati (Optional.empty): nessun merge e il totale rimane a zero")
+    public void executeUnderPiping_procedureReturnsEmpty_noMergeOccurs() throws ProcedureOutputException {
         UndergroundRoute route = new UndergroundRoute();
         route.setPk_prj_lines_trenches(1L);
         ProcedureOutput procedureOutput = mock(ProcedureOutput.class);
@@ -114,9 +116,8 @@ class ServiceUnderPipingTest {
         assertThat(result).isEqualTo("Procedura OK: 0 assegnati.");
     }
 
-    @Test
-    @DisplayName("I DuctTube vengono collegati correttamente alle tratte tramite fk_lines_trenches")
-    void executeUnderPiping_linksDuctTubesCorrectlyToRoutes() throws ProcedureOutputException {
+    @Test(description = "I DuctTube vengono collegati correttamente alle tratte tramite fk_lines_trenches")
+    public void executeUnderPiping_linksDuctTubesCorrectlyToRoutes() throws ProcedureOutputException {
         ConfigRule rule = new ConfigRule();
         UndergroundRoute route = new UndergroundRoute();
         route.setPk_prj_lines_trenches(10L);

@@ -3,28 +3,25 @@ package com.daphne.sottotubazione.domain;
 import com.geowebframework.underPiping.domain.AssignmentResult;
 import com.geowebframework.underPiping.domain.PipeInPipeRoutingProcedureResult;
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class PipeInPipeRoutingProcedureResultTest {
+public class PipeInPipeRoutingProcedureResultTest {
 
-    @Test
-    @DisplayName("Stato iniziale: tutti i contatori a zero e mappa vuota")
-    void initialState_allZeroAndEmpty() {
+    @Test(description = "Stato iniziale: tutti i contatori a zero e mappa vuota")
+    public void initialState_allZeroAndEmpty() {
         PipeInPipeRoutingProcedureResult result = new PipeInPipeRoutingProcedureResult();
         assertThat(result.getTotalAssigned()).isZero();
         assertThat(result.getTotalSkipped()).isZero();
         assertThat(result.getMassiveValueToUpdate()).isEmpty();
     }
 
-    @Test
-    @DisplayName("merge: somma correttamente assigned e skipped da AssignmentResult")
-    void merge_sumsAssignedAndSkipped() {
+    @Test(description = "merge: somma correttamente assigned e skipped da AssignmentResult")
+    public void merge_sumsAssignedAndSkipped() {
         PipeInPipeRoutingProcedureResult total = new PipeInPipeRoutingProcedureResult();
 
         AssignmentResult r1 = new AssignmentResult();
@@ -43,9 +40,8 @@ class PipeInPipeRoutingProcedureResultTest {
         assertThat(total.getTotalSkipped()).isEqualTo(4);
     }
 
-    @Test
-    @DisplayName("merge: unisce i massiveValueToUpdate accumulando le liste per chiave")
-    void merge_accumulatesMassiveValueToUpdate() {
+    @Test(description = "merge: unisce i massiveValueToUpdate accumulando le liste per chiave")
+    public void merge_accumulatesMassiveValueToUpdate() {
         PipeInPipeRoutingProcedureResult total = new PipeInPipeRoutingProcedureResult();
 
         AssignmentResult r1 = new AssignmentResult();
@@ -60,9 +56,8 @@ class PipeInPipeRoutingProcedureResultTest {
         assertThat(total.getMassiveValueToUpdate().get("tbl")).hasSize(2);
     }
 
-    @Test
-    @DisplayName("merge con warning: i messaggi vengono accumulati")
-    void merge_accumulatesWarningMessages() {
+    @Test(description = "merge con warning: i messaggi vengono accumulati")
+    public void merge_accumulatesWarningMessages() {
         PipeInPipeRoutingProcedureResult total = new PipeInPipeRoutingProcedureResult();
         AssignmentResult r = new AssignmentResult();
         r.addLog("Tubo 123 non assegnato");

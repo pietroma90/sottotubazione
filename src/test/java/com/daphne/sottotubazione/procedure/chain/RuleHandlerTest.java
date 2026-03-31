@@ -6,9 +6,8 @@ import com.geowebframework.underPiping.domain.DuctTube;
 import com.geowebframework.underPiping.domain.UndergroundRoute;
 import com.geowebframework.underPiping.procedure.AssignmentContext;
 import com.geowebframework.underPiping.procedure.chain.RuleHandler;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -16,12 +15,12 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class RuleHandlerTest {
+public class RuleHandlerTest {
 
     private ConfigRule rule;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeMethod
+    public void setUp() {
         rule = new ConfigRule();
         rule.setFk_mat_duct_parent(10L);
         rule.setFk_mat_duct_target(20L);
@@ -50,9 +49,8 @@ class RuleHandlerTest {
         return AssignmentContext.builder().tratta(route).build();
     }
 
-    @Test
-    @DisplayName("Nessun parent tube: passa al prossimo handler (null → empty)")
-    void handle_noParent_passesToNext() {
+    @Test(description = "Nessun parent tube: passa al prossimo handler (null → empty)")
+    public void handle_noParent_passesToNext() {
         DuctTube target = makeTarget(2L, 20L);
         AssignmentContext ctx = buildCtx(new HashSet<>(Set.of(target)));
         RuleHandler handler = new RuleHandler(rule);
@@ -62,9 +60,8 @@ class RuleHandlerTest {
         assertThat(result).isEmpty();
     }
 
-    @Test
-    @DisplayName("Nessun target tube: passa al prossimo handler (null → empty)")
-    void handle_noTarget_passesToNext() {
+    @Test(description = "Nessun target tube: passa al prossimo handler (null → empty)")
+    public void handle_noTarget_passesToNext() {
         DuctTube parent = makeParent(1L, 10L);
         AssignmentContext ctx = buildCtx(new HashSet<>(Set.of(parent)));
         RuleHandler handler = new RuleHandler(rule);
@@ -74,9 +71,8 @@ class RuleHandlerTest {
         assertThat(result).isEmpty();
     }
 
-    @Test
-    @DisplayName("Parent e target validi: l'assegnazione incrementa il contatore assigned")
-    void handle_validParentAndTarget_incrementsAssignedCount() {
+    @Test(description = "Parent e target validi: l'assegnazione incrementa il contatore assigned")
+    public void handle_validParentAndTarget_incrementsAssignedCount() {
         DuctTube parent = makeParent(1L, 10L);
         DuctTube target = makeTarget(2L, 20L);
         AssignmentContext ctx = buildCtx(new HashSet<>(Set.of(parent, target)));
@@ -88,9 +84,8 @@ class RuleHandlerTest {
         assertThat(result.get().getAssignedCount()).isEqualTo(1);
     }
 
-    @Test
-    @DisplayName("Target già figlio (is_child=true): non viene riassegnato")
-    void handle_targetAlreadyChild_notReassigned() {
+    @Test(description = "Target già figlio (is_child=true): non viene riassegnato")
+    public void handle_targetAlreadyChild_notReassigned() {
         DuctTube parent = makeParent(1L, 10L);
         DuctTube target = makeTarget(2L, 20L);
         target.set_child(true);
@@ -103,9 +98,8 @@ class RuleHandlerTest {
         assertThat(result.get().getAssignedCount()).isEqualTo(0);
     }
 
-    @Test
-    @DisplayName("Parent raggiunge max_number_usable: non accetta ulteriori figli")
-    void handle_parentAtMaxCapacity_doesNotAssignMore() {
+    @Test(description = "Parent raggiunge max_number_usable: non accetta ulteriori figli")
+    public void handle_parentAtMaxCapacity_doesNotAssignMore() {
         rule.setMat_duct_max_number_usable(1);
         DuctTube parent = makeParent(1L, 10L);
         DuctTube target1 = makeTarget(2L, 20L);
@@ -119,9 +113,8 @@ class RuleHandlerTest {
         assertThat(result.get().getAssignedCount()).isEqualTo(1);
     }
 
-    @Test
-    @DisplayName("Il batch update viene popolato con i dati corretti")
-    void handle_validAssignment_populatesMassiveValueToUpdate() {
+    @Test(description = "Il batch update viene popolato con i dati corretti")
+    public void handle_validAssignment_populatesMassiveValueToUpdate() {
         DuctTube parent = makeParent(1L, 10L);
         DuctTube target = makeTarget(2L, 20L);
         AssignmentContext ctx = buildCtx(new HashSet<>(Set.of(parent, target)));
