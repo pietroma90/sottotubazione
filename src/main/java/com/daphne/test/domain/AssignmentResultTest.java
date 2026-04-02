@@ -4,6 +4,7 @@ import it.eagleprojects.gisfocommons.utils.RowUpdateData;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 
 
@@ -48,5 +49,20 @@ public class AssignmentResultTest {
         AssignmentResult other = new AssignmentResult();
         base.merge(other);
         Assert.assertTrue(base.getMassiveValueToUpdate().isEmpty());
+    }
+
+    @Test(description = "merge: stessa chiave già presente → le liste vengono concatenate")
+    public void merge_sameKeyAlreadyPresent_appendsToList() {
+        AssignmentResult base = new AssignmentResult();
+        RowUpdateData row1 = new RowUpdateData();
+        base.getMassiveValueToUpdate().put("tbl", new ArrayList<>(Collections.singletonList(row1)));
+
+        AssignmentResult other = new AssignmentResult();
+        RowUpdateData row2 = new RowUpdateData();
+        other.getMassiveValueToUpdate().put("tbl", Collections.singletonList(row2));
+
+        base.merge(other);
+
+        Assert.assertEquals(base.getMassiveValueToUpdate().get("tbl").size(), 2);
     }
 }

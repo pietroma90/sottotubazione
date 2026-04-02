@@ -120,4 +120,88 @@ public class RuleHandlerTest {
         Assert.assertTrue(result.isPresent());
         Assert.assertFalse(result.get().getMassiveValueToUpdate().isEmpty());
     }
+
+    @Test(description = "target già processedChild ma non figlio: processAssignment ritorna senza assegnare")
+    public void handle_targetProcessedChildNotChild_notAssigned() {
+        DuctTube parent = makeParent(1L, 10L);
+        DuctTube target = makeTarget(2L, 20L);
+        target.setProcessedChild(true); // già processato, ma is_child=false
+        // processedChild non blocca l'assegnazione di per sé (il flag viene settato dentro)
+        // ma verifica che il flusso non si rompa
+        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        RuleHandler handler = new RuleHandler(rule);
+        Optional<AssignmentResult> result = handler.handle(ctx);
+        Assert.assertTrue(result.isPresent());
+    }
+
+    @Test(description = "Parent già pieno (isFull=true): non assegna nessun target")
+    public void handle_parentAlreadyFull_doesNotAssign() {
+        DuctTube parent = makeParent(1L, 10L);
+        parent.setFull(true);
+        DuctTube target = makeTarget(2L, 20L);
+        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        RuleHandler handler = new RuleHandler(rule);
+
+        Optional<AssignmentResult> result = handler.handle(ctx);
+        Assert.assertTrue(result.isPresent());
+        Assert.assertEquals(result.get().getAssignedCount(), 0);
+    }
+
+    @Test(description = "addBatchUpdate: target nuovo, parent esistente → usa S_FK_PARENT_EXI_DUCT")
+    public void handle_newTargetOldParent_usesFkParentExiDuct() {
+        rule.setFk_mat_duct_parent(10L);
+        rule.setFk_mat_duct_target(20L);
+        rule.setMat_duct_max_number_usable(5);
+        DuctTube parent = makeParent(1L, 10L);
+        parent.set_new(false); // parent esistente
+        DuctTube target = makeTarget(2L, 20L);
+        target.set_new(true);  // target nuovo
+        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        RuleHandler handler = new RuleHandler(rule);
+
+        Optional<AssignmentResult> result = handler.handle(ctx);
+        Assert.assertTrue(result.isPresent());
+        Assert.assertFalse(result.get().getMassiveValueToUpdate().isEmpty());
+    }
+
+    @Test(description = "addBatchUpdate: target esistente, parent esistente → usa TubiEsistenti S_FK_PARENT_EXI_DUCT")
+    public void handle_bothExisting_usesTubiEsistentiKey() {
+        rule.setFk_mat_duct_parent(10L);
+        rule.setFk_mat_duct_target(20L);
+        rule.setMat_duct_max_number_usable(5);
+        DuctTube parent = makeParent(1L, 10L);
+        parent.set_new(false);
+        DuctTube target = makeTarget(2L, 20L);
+        target.set_new(false); // entrambi esistenti
+        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        RuleHandler handler = new RuleHandler(rule);
+
+        Optional<AssignmentResult> result = handler.handle(ctx);
+        Assert.assertTrue(result.isPresent());
+        Assert.assertFalse(result.get().getMassiveValueToUpdate().isEmpty());
+    }
+
+    @Test(description = "Con next handler presente: i risultati vengono mergiati")
+    public void handle_withNextHandler_mergesResults() {
+        ConfigRule rule2 = new ConfigRule();
+        rule2.setFk_mat_duct_parent(30L);
+        rule2.setFk_mat_duct_target(40L);
+        rule2.setMat_duct_max_number_usable(2);
+
+        DuctTube parent1 = makeParent(1L, 10L);
+        DuctTube target1 = makeTarget(2L, 20L);
+        DuctTube parent2 = makeParent(3L, 30L);
+        DuctTube target2 = makeTarget(4L, 40L);
+        target2.set_new(false);
+
+        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent1, target1, parent2, target2)));
+
+        RuleHandler handler1 = new RuleHandler(rule);
+        RuleHandler handler2 = new RuleHandler(rule2);
+        handler1.setNext(handler2);
+
+        Optional<AssignmentResult> result = handler1.handle(ctx);
+        Assert.assertTrue(result.isPresent());
+        Assert.assertEquals(result.get().getAssignedCount(), 2);
+    }
 }

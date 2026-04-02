@@ -11,6 +11,7 @@ import com.geowebframework.underPiping.domain.UndergroundRoute;
 import com.geowebframework.underPiping.message.UnderPipingMessage;
 import com.geowebframework.underPiping.procedure.UnderPipingProcedure;
 import it.eagleprojects.gisfocommons.service.ServiceCommonsMultiutenza;
+import it.eagleprojects.gisfocommons.utils.RowUpdateData;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -134,5 +135,69 @@ public class ServiceUnderPipingTest {
         serviceUnderPiping.executeUnderPiping();
 
         Assert.assertTrue((route.getDuctTubes()).contains(tube));
+    }
+
+    @Test(description = "collectSkipped: tubo processato ma non figlio → skippedCount > 0 e warning loggato")
+    public void executeUnderPiping_skippedTubesAreLogged() throws ProcedureOutputException {
+        ConfigRule rule = new ConfigRule();
+        UndergroundRoute route = new UndergroundRoute();
+        route.setPk_prj_lines_trenches(1L);
+
+        DuctTube skippedTube = new DuctTube();
+        skippedTube.setFk_lines_trenches(1L);
+        skippedTube.setProcessedChild(true);
+        skippedTube.set_child(false); // processato ma non assegnato
+
+        AssignmentResult assignmentResult = new AssignmentResult();
+        // Il servizio chiama collectSkipped internamente; il mock deve restituire
+        // un Optional con un AssignmentResult vuoto
+        ProcedureOutput procedureOutput = mock(ProcedureOutput.class);
+
+        when(daoUnderPiping.findActiveRules()).thenReturn(Collections.singletonList(rule));
+        when(daoUnderPiping.retrieveUndergroundRoutesByDrawing(PROJECT_ID))
+                .thenReturn(Collections.singletonList(route));
+        when(daoUnderPiping.findNuoviNonOccupatiByTratta(PROJECT_ID))
+                .thenReturn(Collections.singletonList(skippedTube));
+        when(underPipingProcedure.execute(eq(route), anyList()))
+                .thenReturn(Optional.of(assignmentResult));
+        when(serviceProcedureOutput.insertAtStart(anyLong(), anyString(), anyLong()))
+                .thenReturn(procedureOutput);
+        when(underPipingMessage.getWarningMessage(
+                eq("warning-under-piping.pipe-not-under-pipe"), anyLong(), anyLong(), any()))
+                .thenReturn("Tubo non assegnato");
+        when(underPipingMessage.getWarningMessage(eq(END_PROCEDURE_KEY), eq(0), eq(1), any()))
+                .thenReturn("Fine con skipped.");
+
+        String result = serviceUnderPiping.executeUnderPiping();
+        Assert.assertEquals(result, "Fine con skipped.");
+    }
+
+    @Test(description = "executeBatchUpdates: se massiveValueToUpdate non è vuoto, il dao viene chiamato")
+    public void executeUnderPiping_withBatchUpdates_callsDao() throws ProcedureOutputException {
+        ConfigRule rule = new ConfigRule();
+        UndergroundRoute route = new UndergroundRoute();
+        route.setPk_prj_lines_trenches(1L);
+
+        AssignmentResult assignmentResult = new AssignmentResult();
+        assignmentResult.getMassiveValueToUpdate()
+                .put("some_table", Collections.singletonList(new RowUpdateData()));
+
+        ProcedureOutput procedureOutput = mock(ProcedureOutput.class);
+
+        when(daoUnderPiping.findActiveRules()).thenReturn(Collections.singletonList(rule));
+        when(daoUnderPiping.retrieveUndergroundRoutesByDrawing(PROJECT_ID))
+                .thenReturn(Collections.singletonList(route));
+        when(daoUnderPiping.findNuoviNonOccupatiByTratta(PROJECT_ID))
+                .thenReturn(Collections.emptyList());
+        when(underPipingProcedure.execute(eq(route), anyList()))
+                .thenReturn(Optional.of(assignmentResult));
+        when(serviceProcedureOutput.insertAtStart(anyLong(), anyString(), anyLong()))
+                .thenReturn(procedureOutput);
+        when(underPipingMessage.getWarningMessage(eq(END_PROCEDURE_KEY), anyInt(), anyInt(), any()))
+                .thenReturn("OK con batch");
+
+        serviceUnderPiping.executeUnderPiping();
+
+        verify(daoUnderPiping).massiveUpdateEntityValuesByFilterValuesBatch(eq("some_table"), anyList());
     }
 }

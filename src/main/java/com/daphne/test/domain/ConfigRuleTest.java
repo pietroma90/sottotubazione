@@ -112,4 +112,36 @@ public class ConfigRuleTest {
         route.setTrenches_types(99L);
         Assert.assertFalse(rule.appliesTo(route));
     }
+
+    @Test(description = "matchesParent: solo max settato, diametro ≤ max → true")
+    public void matchesParent_onlyMaxDiam_inRange() {
+        rule.setTubi_esistenti_ext_max_diam_parent(50);
+        DuctTube tube = new DuctTube();
+        tube.setExsternal_diameter(30);
+        Assert.assertTrue(rule.matchesParent(tube));
+    }
+
+    @Test(description = "matchesTarget: fk_mat_duct_target diverso → false")
+    public void matchesTarget_byMaterial_noMatch() {
+        rule.setFk_mat_duct_target(7L);
+        DuctTube tube = new DuctTube();
+        tube.setFk_mat_duct(99L);
+        Assert.assertFalse(rule.matchesTarget(tube));
+    }
+
+    @Test(description = "matchesTarget: diametro null trattato come 0, min=0 → true")
+    public void matchesTarget_nullDiameter_treatedAsZero() {
+        rule.setTubi_esistenti_ext_min_diam_target(0);
+        rule.setTubi_esistenti_ext_max_diam_target(100);
+        DuctTube tube = new DuctTube();
+        Assert.assertTrue(rule.matchesTarget(tube));
+    }
+
+    @Test(description = "appliesTo: fk_lines_types_ids null → false")
+    public void appliesTo_nullTypeList_returnsFalse() {
+        rule.setFk_lines_types_ids(null);
+        UndergroundRoute route = new UndergroundRoute();
+        route.setTrenches_types(1L);
+        Assert.assertFalse(rule.appliesTo(route));
+    }
 }
