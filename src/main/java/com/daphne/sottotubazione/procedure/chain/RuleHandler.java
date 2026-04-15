@@ -1,9 +1,8 @@
 package com.geowebframework.underPiping.procedure.chain;
 
-
-import com.geowebframework.underPiping.domain.AssignmentResult;
-import com.geowebframework.underPiping.domain.ConfigRule;
-import com.geowebframework.underPiping.domain.DuctTube;
+import com.geowebframework.underPiping.model.AssignmentResult;
+import com.geowebframework.underPiping.model.ConfigRule;
+import com.geowebframework.underPiping.model.DuctTube;
 import com.geowebframework.underPiping.procedure.AssignmentContext;
 import com.geowebframework.webclient.model.serverDbEntity.tubi.RLinesProducts;
 import com.geowebframework.webclient.model.serverDbEntity.tubi.TubiEsistenti;
@@ -15,9 +14,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Handler base per la Chain of Responsibility delle regole di configurazione.
- */
 @RequiredArgsConstructor
 public class RuleHandler {
 
@@ -49,7 +45,7 @@ public class RuleHandler {
 
         parentDucts.forEach(parent -> {
             targetDucts.forEach(target -> processAssignment(parent, target, myResult));
-            if (parent.getChildCount() == rule.getMat_duct_max_number_usable()) {
+            if (parent.getChildCount() == rule.getMax_duct_number()) {
                 parent.setFull(true);
             }
         });
@@ -58,13 +54,10 @@ public class RuleHandler {
         return Optional.of(myResult);
     }
 
-    /**
-     * Tenta di assegnare un target a un parent, aggiornando il risultato se l'assegnazione va a buon fine.
-     */
     private void processAssignment(DuctTube parent, DuctTube target, AssignmentResult result) {
         target.setProcessedChild(true);
         if (target.is_child()
-                || parent.getChildCount() >= rule.getMat_duct_max_number_usable()
+                || parent.getChildCount() >= rule.getMax_duct_number()
                 || parent.isFull()) {
             return;
         }

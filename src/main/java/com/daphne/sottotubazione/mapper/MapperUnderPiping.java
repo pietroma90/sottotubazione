@@ -1,8 +1,8 @@
 package com.geowebframework.underPiping.mapper;
 
-import com.geowebframework.underPiping.domain.ConfigRule;
-import com.geowebframework.underPiping.domain.DuctTube;
-import com.geowebframework.underPiping.domain.UndergroundRoute;
+import com.geowebframework.underPiping.model.ConfigRule;
+import com.geowebframework.underPiping.model.DuctTube;
+import com.geowebframework.underPiping.model.UndergroundRoute;
 import it.eagleprojects.gisfocommons.typehandler.BigIntArrayTypeHandler;
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;
 import org.apache.ibatis.annotations.Param;
@@ -59,12 +59,12 @@ public interface MapperUnderPiping {
     @Select("select distinct t.pk_prj_lines_trenches , t.name, t.trenches_types " +
             "from prj_lines_trenches t " +
             "join lines_types lt on lt.pk_lines_types =  t.trenches_types " +
-            "join procedure_config.r_config_fk_parent_duct r on r.fk_lines_types_ids @> array[lt.pk_lines_types]" +
+            "join procedure_config.rules_laying_duct r on r.lines_types_ids @> array[lt.pk_lines_types]" +
             "where drawing = #{drawing} ")
     List<UndergroundRoute> retrieveUndergroundRoutesByDrawing(@Param("drawing") Long drawing);
 
-    @Select("select * from procedure_config.r_config_fk_parent_duct where not is_deleted order by priority_rules_order")
-    @Result(column = "fk_lines_types_ids", property = "fk_lines_types_ids" , typeHandler = BigIntArrayTypeHandler.class)
+    @Select("select * from procedure_config.rules_laying_duct where not is_deleted order by priority")
+    @Result(column = "lines_types_ids", property = "lines_types_ids" , typeHandler = BigIntArrayTypeHandler.class)
     List<ConfigRule> findActiveRules();
 
     @Update("<script>" +

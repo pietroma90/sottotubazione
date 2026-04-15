@@ -1,8 +1,8 @@
 package com.geowebframework.underPiping.procedure;
 
-import com.geowebframework.underPiping.domain.AssignmentResult;
-import com.geowebframework.underPiping.domain.ConfigRule;
-import com.geowebframework.underPiping.domain.UndergroundRoute;
+import com.geowebframework.underPiping.model.AssignmentResult;
+import com.geowebframework.underPiping.model.ConfigRule;
+import com.geowebframework.underPiping.model.UndergroundRoute;
 import com.geowebframework.underPiping.procedure.chain.RuleChainBuilder;
 import com.geowebframework.underPiping.procedure.chain.RuleHandler;
 import org.mockito.InjectMocks;

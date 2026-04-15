@@ -1,4 +1,4 @@
-package com.geowebframework.underPiping.domain;
+package com.geowebframework.underPiping.model;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -20,7 +20,7 @@ public class ConfigRuleTest {
 
     @Test(description = "matchesParent: fk_mat_duct_parent settato e corrisponde → true")
     public void matchesParent_byMaterial_match() {
-        rule.setFk_mat_duct_parent(5L);
+        rule.setMat_duct_parent_id(5L);
         DuctTube tube = new DuctTube();
         tube.setFk_mat_duct(5L);
         Assert.assertTrue(rule.matchesParent(tube));
@@ -28,7 +28,7 @@ public class ConfigRuleTest {
 
     @Test(description = "matchesParent: fk_mat_duct_parent settato ma diverso → false")
     public void matchesParent_byMaterial_noMatch() {
-        rule.setFk_mat_duct_parent(5L);
+        rule.setMat_duct_parent_id(5L);
         DuctTube tube = new DuctTube();
         tube.setFk_mat_duct(9L);
         Assert.assertFalse(rule.matchesParent(tube));
@@ -36,8 +36,8 @@ public class ConfigRuleTest {
 
     @Test(description = "matchesParent: nessun fk, diametro nel range → true")
     public void matchesParent_byDiameter_inRange() {
-        rule.setTubi_esistenti_ext_min_diam_parent(10);
-        rule.setTubi_esistenti_ext_max_diam_parent(50);
+        rule.setMin_range_parent_exi_duct(10);
+        rule.setMax_range_parent_exi_duct(50);
         DuctTube tube = new DuctTube();
         tube.setExsternal_diameter(30);
         Assert.assertTrue(rule.matchesParent(tube));
@@ -45,8 +45,8 @@ public class ConfigRuleTest {
 
     @Test(description = "matchesParent: nessun fk, diametro fuori range → false")
     public void matchesParent_byDiameter_outOfRange() {
-        rule.setTubi_esistenti_ext_min_diam_parent(10);
-        rule.setTubi_esistenti_ext_max_diam_parent(50);
+        rule.setMin_range_parent_exi_duct(10);
+        rule.setMax_range_parent_exi_duct(50);
         DuctTube tube = new DuctTube();
         tube.setExsternal_diameter(60);
         Assert.assertFalse(rule.matchesParent(tube));
@@ -54,8 +54,8 @@ public class ConfigRuleTest {
 
     @Test(description = "matchesParent: diametro null trattato come 0, min=0 → true")
     public void matchesParent_nullDiameter_treatedAsZero() {
-        rule.setTubi_esistenti_ext_min_diam_parent(0);
-        rule.setTubi_esistenti_ext_max_diam_parent(100);
+        rule.setMin_range_parent_exi_duct(0);
+        rule.setMax_range_parent_exi_duct(100);
         DuctTube tube = new DuctTube(); // diameter null
         Assert.assertTrue(rule.matchesParent(tube));
     }
@@ -64,7 +64,7 @@ public class ConfigRuleTest {
 
     @Test(description = "matchesTarget: fk_mat_duct_target corrisponde → true")
     public void matchesTarget_byMaterial_match() {
-        rule.setFk_mat_duct_target(7L);
+        rule.setMat_duct_child_id(7L);
         DuctTube tube = new DuctTube();
         tube.setFk_mat_duct(7L);
         Assert.assertTrue(rule.matchesTarget(tube));
@@ -72,8 +72,8 @@ public class ConfigRuleTest {
 
     @Test(description = "matchesTarget: diametro nel range → true")
     public void matchesTarget_byDiameter_inRange() {
-        rule.setTubi_esistenti_ext_min_diam_target(5);
-        rule.setTubi_esistenti_ext_max_diam_target(20);
+        rule.setMin_range_child_exi_duct(5);
+        rule.setMax_range_child_exi_duct(20);
         DuctTube tube = new DuctTube();
         tube.setExsternal_diameter(10);
         Assert.assertTrue(rule.matchesTarget(tube));
@@ -83,7 +83,7 @@ public class ConfigRuleTest {
 
     @Test(description = "appliesTo: trenches_types null → false")
     public void appliesTo_nullTrenchType_returnsFalse() {
-        rule.setFk_lines_types_ids(Collections.singletonList(1L));
+        rule.setLines_types_ids(Collections.singletonList(1L));
         UndergroundRoute route = new UndergroundRoute();
         route.setTrenches_types(null);
         Assert.assertFalse(rule.appliesTo(route));
@@ -91,7 +91,7 @@ public class ConfigRuleTest {
 
     @Test(description = "appliesTo: fk_lines_types_ids vuota → false")
     public void appliesTo_emptyTypeList_returnsFalse() {
-        rule.setFk_lines_types_ids(Collections.emptyList());
+        rule.setLines_types_ids(Collections.emptyList());
         UndergroundRoute route = new UndergroundRoute();
         route.setTrenches_types(1L);
         Assert.assertFalse(rule.appliesTo(route));
@@ -99,7 +99,7 @@ public class ConfigRuleTest {
 
     @Test(description = "appliesTo: type presente nella lista → true")
     public void appliesTo_typeInList_returnsTrue() {
-        rule.setFk_lines_types_ids(Arrays.asList(1L, 2L, 3L));
+        rule.setLines_types_ids(Arrays.asList(1L, 2L, 3L));
         UndergroundRoute route = new UndergroundRoute();
         route.setTrenches_types(2L);
         Assert.assertTrue(rule.appliesTo(route));
@@ -107,7 +107,7 @@ public class ConfigRuleTest {
 
     @Test(description = "appliesTo: type NON presente nella lista → false")
     public void appliesTo_typeNotInList_returnsFalse() {
-        rule.setFk_lines_types_ids(Arrays.asList(1L, 2L));
+        rule.setLines_types_ids(Arrays.asList(1L, 2L));
         UndergroundRoute route = new UndergroundRoute();
         route.setTrenches_types(99L);
         Assert.assertFalse(rule.appliesTo(route));
@@ -115,7 +115,7 @@ public class ConfigRuleTest {
 
     @Test(description = "matchesParent: solo max settato, diametro ≤ max → true")
     public void matchesParent_onlyMaxDiam_inRange() {
-        rule.setTubi_esistenti_ext_max_diam_parent(50);
+        rule.setMax_range_parent_exi_duct(50);
         DuctTube tube = new DuctTube();
         tube.setExsternal_diameter(30);
         Assert.assertTrue(rule.matchesParent(tube));
@@ -123,7 +123,7 @@ public class ConfigRuleTest {
 
     @Test(description = "matchesTarget: fk_mat_duct_target diverso → false")
     public void matchesTarget_byMaterial_noMatch() {
-        rule.setFk_mat_duct_target(7L);
+        rule.setMat_duct_child_id(7L);
         DuctTube tube = new DuctTube();
         tube.setFk_mat_duct(99L);
         Assert.assertFalse(rule.matchesTarget(tube));
@@ -131,17 +131,48 @@ public class ConfigRuleTest {
 
     @Test(description = "matchesTarget: diametro null trattato come 0, min=0 → true")
     public void matchesTarget_nullDiameter_treatedAsZero() {
-        rule.setTubi_esistenti_ext_min_diam_target(0);
-        rule.setTubi_esistenti_ext_max_diam_target(100);
+        rule.setMin_range_child_exi_duct(0);
+        rule.setMax_range_child_exi_duct(100);
         DuctTube tube = new DuctTube();
         Assert.assertTrue(rule.matchesTarget(tube));
     }
 
     @Test(description = "appliesTo: fk_lines_types_ids null → false")
     public void appliesTo_nullTypeList_returnsFalse() {
-        rule.setFk_lines_types_ids(null);
+        rule.setLines_types_ids(null);
         UndergroundRoute route = new UndergroundRoute();
         route.setTrenches_types(1L);
         Assert.assertFalse(rule.appliesTo(route));
     }
+
+    // 1. matchesParent: solo maxDiam settato (minDiam null → minOk=true per default)
+    @Test(description = "matchesParent: solo maxDiam settato, minDiam null → minOk=true, diam nel range → true")
+    public void matchesParent_onlyMaxDiam_returnsTrue() {
+        rule.setMax_range_parent_exi_duct(50);
+        // minDiam null → minOk = true sempre
+        DuctTube tube = new DuctTube();
+        tube.setExsternal_diameter(30);
+        Assert.assertTrue(rule.matchesParent(tube));
+    }
+
+    // 2. matchesParent: solo minDiam settato (maxDiam null → maxOk=true per default)
+    @Test(description = "matchesParent: solo minDiam settato, maxDiam null → maxOk=true, diam nel range → true")
+    public void matchesParent_onlyMinDiam_returnsTrue() {
+        rule.setMin_range_parent_exi_duct(10);
+        // maxDiam null → maxOk = true sempre
+        DuctTube tube = new DuctTube();
+        tube.setExsternal_diameter(30);
+        Assert.assertTrue(rule.matchesParent(tube));
+    }
+
+    // 4. matchesTarget: diametro fuori range → false
+    @Test(description = "matchesTarget: diametro fuori range → false")
+    public void matchesTarget_byDiameter_outOfRange() {
+        rule.setMin_range_child_exi_duct(5);
+        rule.setMax_range_child_exi_duct(20);
+        DuctTube tube = new DuctTube();
+        tube.setExsternal_diameter(99);
+        Assert.assertFalse(rule.matchesTarget(tube));
+    }
+
 }

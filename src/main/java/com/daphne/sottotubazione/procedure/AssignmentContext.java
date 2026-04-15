@@ -1,6 +1,6 @@
 package com.geowebframework.underPiping.procedure;
 
-import com.geowebframework.underPiping.domain.UndergroundRoute;
+import com.geowebframework.underPiping.model.UndergroundRoute;
 import lombok.Builder;
 import lombok.Data;
 

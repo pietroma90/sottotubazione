@@ -1,4 +1,4 @@
-package com.geowebframework.underPiping.domain;
+package com.geowebframework.underPiping.model;
 
 import it.eagleprojects.gisfocommons.utils.Message;
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;
@@ -9,11 +9,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * Risultato dell'assegnazione per una singola tratta.
- */
-@Data
 @NoArgsConstructor
+@Getter
+@Setter
 public class AssignmentResult {
 
     private Message message = new Message();

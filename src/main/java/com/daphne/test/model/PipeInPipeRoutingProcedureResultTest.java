@@ -1,4 +1,4 @@
-package com.geowebframework.underPiping.domain;
+package com.geowebframework.underPiping.model;
 
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;
 import org.testng.Assert;

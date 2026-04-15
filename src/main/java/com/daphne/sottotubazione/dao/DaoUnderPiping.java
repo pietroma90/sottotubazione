@@ -1,8 +1,8 @@
 package com.geowebframework.underPiping.dao;
 
-import com.geowebframework.underPiping.domain.ConfigRule;
-import com.geowebframework.underPiping.domain.DuctTube;
-import com.geowebframework.underPiping.domain.UndergroundRoute;
+import com.geowebframework.underPiping.model.ConfigRule;
+import com.geowebframework.underPiping.model.DuctTube;
+import com.geowebframework.underPiping.model.UndergroundRoute;
 import com.geowebframework.underPiping.mapper.MapperUnderPiping;
 import it.eagleprojects.gisfocommons.dao.DaoCommonsAbstractClass;
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;

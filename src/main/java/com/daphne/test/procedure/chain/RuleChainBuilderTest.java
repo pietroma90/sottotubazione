@@ -1,7 +1,7 @@
 package com.geowebframework.underPiping.procedure.chain;
 
-import com.geowebframework.underPiping.domain.ConfigRule;
-import com.geowebframework.underPiping.domain.UndergroundRoute;
+import com.geowebframework.underPiping.model.ConfigRule;
+import com.geowebframework.underPiping.model.UndergroundRoute;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -24,8 +24,8 @@ public class RuleChainBuilderTest {
 
     private ConfigRule makeRule(long typeId, int priority, boolean deleted) {
         ConfigRule r = new ConfigRule();
-        r.setFk_lines_types_ids(Arrays.asList(typeId));
-        r.setPriority_rules_order(priority);
+        r.setLines_types_ids(Arrays.asList(typeId));
+        r.setPriority(priority);
         r.set_deleted(deleted);
         return r;
     }

@@ -1,11 +1,7 @@
-package com.geowebframework.underPiping.domain;
+package com.geowebframework.underPiping.model;
 
 import lombok.Data;
 
-/**
- * Tubo "target" che viene infilato dentro il tubo parent.
- * Può essere nuovo (r_lines_products) o esistente.
- */
 @Data
 public class DuctTube {
 

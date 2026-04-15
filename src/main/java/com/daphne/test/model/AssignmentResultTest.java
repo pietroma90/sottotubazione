@@ -1,4 +1,4 @@
-package com.geowebframework.underPiping.domain;
+package com.geowebframework.underPiping.model;
 
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;
 import org.testng.Assert;
@@ -60,6 +60,22 @@ public class AssignmentResultTest {
         AssignmentResult other = new AssignmentResult();
         RowUpdateData row2 = new RowUpdateData();
         other.getMassiveValueToUpdate().put("tbl", Collections.singletonList(row2));
+
+        base.merge(other);
+
+        Assert.assertEquals(base.getMassiveValueToUpdate().get("tbl").size(), 2);
+    }
+
+    // merge(): stessa chiave già presente nella mappa base → computeIfAbsent + addAll
+    @Test(description = "merge: chiave già presente in base → la lista viene estesa, non sovrascritta")
+    public void merge_existingKey_appendsToExistingList() {
+        AssignmentResult base = new AssignmentResult();
+        base.getMassiveValueToUpdate()
+                .put("tbl", new ArrayList<>(Collections.singletonList(new RowUpdateData())));
+
+        AssignmentResult other = new AssignmentResult();
+        other.getMassiveValueToUpdate()
+                .put("tbl", Collections.singletonList(new RowUpdateData()));
 
         base.merge(other);
 

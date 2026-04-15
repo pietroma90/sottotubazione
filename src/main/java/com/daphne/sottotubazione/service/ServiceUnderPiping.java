@@ -1,17 +1,13 @@
 package com.geowebframework.underPiping.service;
 
-import com.geowebframework.procedure.ProcedureEnum;
-import com.geowebframework.procedureOutput.ProcedureOutput;
-import com.geowebframework.procedureOutput.ProcedureOutputException;
-import com.geowebframework.procedureOutput.ServiceProcedureOutput;
 import com.geowebframework.underPiping.dao.DaoUnderPiping;
-import com.geowebframework.underPiping.domain.*;
+import com.geowebframework.underPiping.model.*;
 import com.geowebframework.underPiping.message.UnderPipingMessage;
 import com.geowebframework.underPiping.procedure.UnderPipingProcedure;
-import com.geowebframework.webclient.model.serverDbEntity.Projects;
 import it.eagleprojects.gisfocommons.service.ServiceCommonsMultiutenza;
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -19,40 +15,28 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @__(@Autowired))
 public class ServiceUnderPiping {
 
     private final DaoUnderPiping daoUnderPiping;
     private final UnderPipingProcedure underPipingProcedure;
     private final ServiceCommonsMultiutenza serviceCommonsMultiutenza;
-    private final ServiceProcedureOutput serviceProcedureOutput;
     private final UnderPipingMessage underPipingMessage;
 
-    public String executeUnderPiping() throws ProcedureOutputException {
-        Long projectId = serviceCommonsMultiutenza.getCorrectDrawing();
+    public String executeUnderPiping() {
         List<ConfigRule> rules = loadAndValidateRules();
-        if (rules == null) return getStringResult();
-        List<UndergroundRoute> routes = loadAndPrepareRoutes(projectId);
-        if (routes == null) return getStringResult();
-        ProcedureOutput procedureOutput = serviceProcedureOutput.insertAtStart(projectId, Projects.S_TABLE_NAME, ProcedureEnum.underPiping.getId());
+        List<UndergroundRoute> routes = loadAndPrepareRoutes();
+        if (rules == null || routes == null)
+            return underPipingMessage.getWarningMessage("warning-under-piping.standard-log");
         PipeInPipeRoutingProcedureResult result = runProcedure(routes, rules);
         executeBatchUpdates(result.getMassiveValueToUpdate());
-        String resulLog = getSuccessStringResult(result);
-        serviceProcedureOutput.writeFileAndUpdateTheEnd(procedureOutput, resulLog, true);
-        return resulLog;
+        return getSuccessStringResult(result);
     }
 
     private String getSuccessStringResult(PipeInPipeRoutingProcedureResult result) {
         return underPipingMessage.getWarningMessage("warning-under-piping.end-procedure", result.getTotalAssigned(), result.getTotalSkipped(), result.getMessage().getWarning());
     }
 
-    private String getStringResult() {
-        return underPipingMessage.getWarningMessage("warning-under-piping.standard-log");
-    }
-
-    /**
-     * Responsabilità: caricare e validare le regole di configurazione
-     */
     private List<ConfigRule> loadAndValidateRules() {
         List<ConfigRule> rules = daoUnderPiping.findActiveRules();
         if (CollectionUtils.isEmpty(rules)) {
@@ -61,10 +45,8 @@ public class ServiceUnderPiping {
         return rules;
     }
 
-    /**
-     * Responsabilità: caricare le tratte e collegare i tubi
-     */
-    private List<UndergroundRoute> loadAndPrepareRoutes(Long projectId) {
+    private List<UndergroundRoute> loadAndPrepareRoutes() {
+        Long projectId = serviceCommonsMultiutenza.getCorrectDrawing();
         List<UndergroundRoute> routes = daoUnderPiping.retrieveUndergroundRoutesByDrawing(projectId);
         if (CollectionUtils.isEmpty(routes)) {
             return null;
@@ -74,9 +56,6 @@ public class ServiceUnderPiping {
         return routes;
     }
 
-    /**
-     * Responsabilità: eseguire la procedura di assegnazione
-     */
     private PipeInPipeRoutingProcedureResult runProcedure(List<UndergroundRoute> routes, List<ConfigRule> rules) {
         PipeInPipeRoutingProcedureResult result = new PipeInPipeRoutingProcedureResult();
         routes.forEach(undergroundRoute -> processPipelineAssignments(rules, undergroundRoute, result));
