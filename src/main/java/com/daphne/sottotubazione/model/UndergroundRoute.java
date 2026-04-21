@@ -1,4 +1,4 @@
-package com.geowebframework.underPiping.model;
+package com.geowebframework.pipeLaying.model;
 
 import com.geowebframework.webclient.model.serverDbEntity.prj.PrjLinesTrenches;
 import lombok.Data;

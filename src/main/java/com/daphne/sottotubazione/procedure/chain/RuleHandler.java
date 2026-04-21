@@ -1,9 +1,9 @@
-package com.geowebframework.underPiping.procedure.chain;
+package com.geowebframework.pipeLaying.procedure.chain;
 
-import com.geowebframework.underPiping.model.AssignmentResult;
-import com.geowebframework.underPiping.model.ConfigRule;
-import com.geowebframework.underPiping.model.DuctTube;
-import com.geowebframework.underPiping.procedure.AssignmentContext;
+import com.geowebframework.pipeLaying.model.AssignmentResult;
+import com.geowebframework.pipeLaying.model.ConfigRule;
+import com.geowebframework.pipeLaying.model.DuctTube;
+import com.geowebframework.pipeLaying.model.UndergroundRoute;
 import com.geowebframework.webclient.model.serverDbEntity.tubi.RLinesProducts;
 import com.geowebframework.webclient.model.serverDbEntity.tubi.TubiEsistenti;
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;
@@ -25,20 +25,20 @@ public class RuleHandler {
         return next;
     }
 
-    protected Optional<AssignmentResult> passToNext(AssignmentContext ctx) {
-        return next != null ? next.handle(ctx) : Optional.empty();
+    protected Optional<AssignmentResult> passToNext(UndergroundRoute route) {
+        return next != null ? next.handle(route) : Optional.empty();
     }
 
-    public Optional<AssignmentResult> handle(AssignmentContext ctx) {
-        Set<DuctTube> parentDucts = ctx.getTratta().getDuctTubes().stream()
+    public Optional<AssignmentResult> handle(UndergroundRoute route) {
+        Set<DuctTube> parentDucts = route.getDuctTubes().stream()
                 .filter(rule::matchesParent)
                 .collect(Collectors.toSet());
-        Set<DuctTube> targetDucts = ctx.getTratta().getDuctTubes().stream()
+        Set<DuctTube> targetDucts = route.getDuctTubes().stream()
                 .filter(rule::matchesTarget)
                 .collect(Collectors.toSet());
 
         if (parentDucts.isEmpty() || targetDucts.isEmpty()) {
-            return passToNext(ctx);
+            return passToNext(route);
         }
 
         AssignmentResult myResult = new AssignmentResult();
@@ -49,7 +49,7 @@ public class RuleHandler {
                 parent.setFull(true);
             }
         });
-        Optional<AssignmentResult> nextResult = passToNext(ctx);
+        Optional<AssignmentResult> nextResult = passToNext(route);
         nextResult.ifPresent(myResult::merge);
         return Optional.of(myResult);
     }

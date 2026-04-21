@@ -1,13 +1,13 @@
-package com.geowebframework.underPiping.message;
+package com.geowebframework.pipeLaying.message;
 
 import it.eagleprojects.gisfocommons.messages.GisfoStringMessages;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UnderPipingMessage extends GisfoStringMessages {
+public class PipeLayingMessage extends GisfoStringMessages {
 
     @Override
     protected String getBundlesFolderName() {
-        return "under-piping";
+        return "pipe-laying";
     }
 }

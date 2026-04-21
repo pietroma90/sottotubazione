@@ -1,4 +1,4 @@
-package com.geowebframework.underPiping.model;
+package com.geowebframework.pipeLaying.model;
 
 import it.eagleprojects.gisfocommons.utils.Message;
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;
@@ -10,14 +10,14 @@ import java.util.HashMap;
 import java.util.List;
 
 @Data
-public class PipeInPipeRoutingProcedureResult {
+public class PipeLayingProcedureResult {
 
     private final Message message = new Message();
     private int totalAssigned = 0;
     private int totalSkipped = 0;
     protected HashMap<String, List<RowUpdateData>> massiveValueToUpdate = new HashMap<>();
 
-    public void merge(AssignmentResult result) {
+    public void accumulateResults(AssignmentResult result) {
         this.message.addToWarning(result.getMessage().getWarning());
         this.totalAssigned += result.getAssignedCount();
         this.totalSkipped  += result.getSkippedCount();

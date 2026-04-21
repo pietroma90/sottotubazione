@@ -1,10 +1,9 @@
-package com.geowebframework.underPiping.procedure.chain;
+package com.geowebframework.pipeLaying.procedure.chain;
 
-import com.geowebframework.underPiping.model.AssignmentResult;
-import com.geowebframework.underPiping.model.ConfigRule;
-import com.geowebframework.underPiping.model.DuctTube;
-import com.geowebframework.underPiping.model.UndergroundRoute;
-import com.geowebframework.underPiping.procedure.AssignmentContext;
+import com.geowebframework.pipeLaying.model.AssignmentResult;
+import com.geowebframework.pipeLaying.model.ConfigRule;
+import com.geowebframework.pipeLaying.model.DuctTube;
+import com.geowebframework.pipeLaying.model.UndergroundRoute;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -40,29 +39,29 @@ public class RuleHandlerTest {
         return t;
     }
 
-    private AssignmentContext buildCtx(Set<DuctTube> tubes) {
+    private UndergroundRoute buildCtx(Set<DuctTube> tubes) {
         UndergroundRoute route = new UndergroundRoute();
         route.setDuctTubes(tubes);
-        return AssignmentContext.builder().tratta(route).build();
+        return route;
     }
 
     @Test(description = "Nessun parent tube: passa al prossimo handler (null → empty)")
     public void handle_noParent_passesToNext() {
         DuctTube target = makeTarget(2L, 20L);
-        AssignmentContext ctx = buildCtx(new HashSet<>(Collections.singleton(target)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Collections.singleton(target)));
         RuleHandler handler = new RuleHandler(rule);
 
-        Optional<AssignmentResult> result = handler.handle(ctx);
+        Optional<AssignmentResult> result = handler.handle(route);
         Assert.assertFalse(result.isPresent());
     }
 
     @Test(description = "Nessun target tube: passa al prossimo handler (null → empty)")
     public void handle_noTarget_passesToNext() {
         DuctTube parent = makeParent(1L, 10L);
-        AssignmentContext ctx = buildCtx(new HashSet<>(Collections.singleton(parent)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Collections.singleton(parent)));
         RuleHandler handler = new RuleHandler(rule);
 
-        Optional<AssignmentResult> result = handler.handle(ctx);
+        Optional<AssignmentResult> result = handler.handle(route);
 
         Assert.assertFalse(result.isPresent());
     }
@@ -71,10 +70,10 @@ public class RuleHandlerTest {
     public void handle_validParentAndTarget_incrementsAssignedCount() {
         DuctTube parent = makeParent(1L, 10L);
         DuctTube target = makeTarget(2L, 20L);
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
         RuleHandler handler = new RuleHandler(rule);
 
-        Optional<AssignmentResult> result = handler.handle(ctx);
+        Optional<AssignmentResult> result = handler.handle(route);
 
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals(result.get().getAssignedCount(),1);
@@ -85,10 +84,10 @@ public class RuleHandlerTest {
         DuctTube parent = makeParent(1L, 10L);
         DuctTube target = makeTarget(2L, 20L);
         target.set_child(true);
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
         RuleHandler handler = new RuleHandler(rule);
 
-        Optional<AssignmentResult> result = handler.handle(ctx);
+        Optional<AssignmentResult> result = handler.handle(route);
 
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals(result.get().getAssignedCount(),0);
@@ -100,10 +99,10 @@ public class RuleHandlerTest {
         DuctTube parent = makeParent(1L, 10L);
         DuctTube target1 = makeTarget(2L, 20L);
         DuctTube target2 = makeTarget(3L, 20L);
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target1, target2)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent, target1, target2)));
         RuleHandler handler = new RuleHandler(rule);
 
-        Optional<AssignmentResult> result = handler.handle(ctx);
+        Optional<AssignmentResult> result = handler.handle(route);
 
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals(result.get().getAssignedCount(),1);
@@ -113,10 +112,10 @@ public class RuleHandlerTest {
     public void handle_validAssignment_populatesMassiveValueToUpdate() {
         DuctTube parent = makeParent(1L, 10L);
         DuctTube target = makeTarget(2L, 20L);
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
         RuleHandler handler = new RuleHandler(rule);
 
-        Optional<AssignmentResult> result = handler.handle(ctx);
+        Optional<AssignmentResult> result = handler.handle(route);
         Assert.assertTrue(result.isPresent());
         Assert.assertFalse(result.get().getMassiveValueToUpdate().isEmpty());
     }
@@ -128,9 +127,9 @@ public class RuleHandlerTest {
         target.setProcessedChild(true); // già processato, ma is_child=false
         // processedChild non blocca l'assegnazione di per sé (il flag viene settato dentro)
         // ma verifica che il flusso non si rompa
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
         RuleHandler handler = new RuleHandler(rule);
-        Optional<AssignmentResult> result = handler.handle(ctx);
+        Optional<AssignmentResult> result = handler.handle(route);
         Assert.assertTrue(result.isPresent());
     }
 
@@ -139,10 +138,10 @@ public class RuleHandlerTest {
         DuctTube parent = makeParent(1L, 10L);
         parent.setFull(true);
         DuctTube target = makeTarget(2L, 20L);
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
         RuleHandler handler = new RuleHandler(rule);
 
-        Optional<AssignmentResult> result = handler.handle(ctx);
+        Optional<AssignmentResult> result = handler.handle(route);
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals(result.get().getAssignedCount(), 0);
     }
@@ -156,10 +155,10 @@ public class RuleHandlerTest {
         parent.set_new(false); // parent esistente
         DuctTube target = makeTarget(2L, 20L);
         target.set_new(true);  // target nuovo
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
         RuleHandler handler = new RuleHandler(rule);
 
-        Optional<AssignmentResult> result = handler.handle(ctx);
+        Optional<AssignmentResult> result = handler.handle(route);
         Assert.assertTrue(result.isPresent());
         Assert.assertFalse(result.get().getMassiveValueToUpdate().isEmpty());
     }
@@ -173,10 +172,10 @@ public class RuleHandlerTest {
         parent.set_new(false);
         DuctTube target = makeTarget(2L, 20L);
         target.set_new(false); // entrambi esistenti
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
         RuleHandler handler = new RuleHandler(rule);
 
-        Optional<AssignmentResult> result = handler.handle(ctx);
+        Optional<AssignmentResult> result = handler.handle(route);
         Assert.assertTrue(result.isPresent());
         Assert.assertFalse(result.get().getMassiveValueToUpdate().isEmpty());
     }
@@ -194,13 +193,13 @@ public class RuleHandlerTest {
         DuctTube target2 = makeTarget(4L, 40L);
         target2.set_new(false);
 
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent1, target1, parent2, target2)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent1, target1, parent2, target2)));
 
         RuleHandler handler1 = new RuleHandler(rule);
         RuleHandler handler2 = new RuleHandler(rule2);
         handler1.setNext(handler2);
 
-        Optional<AssignmentResult> result = handler1.handle(ctx);
+        Optional<AssignmentResult> result = handler1.handle(route);
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals(result.get().getAssignedCount(), 2);
     }
@@ -217,13 +216,13 @@ public class RuleHandlerTest {
         DuctTube p2 = makeParent(3L, 30L);
         DuctTube t2 = makeTarget(4L, 40L);
 
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(p1, t1, p2, t2)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(p1, t1, p2, t2)));
 
         RuleHandler h1 = new RuleHandler(rule);
         RuleHandler h2 = new RuleHandler(rule2);
         h1.setNext(h2);
 
-        Optional<AssignmentResult> result = h1.handle(ctx);
+        Optional<AssignmentResult> result = h1.handle(route);
 
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals(result.get().getAssignedCount(), 2);
@@ -234,10 +233,10 @@ public class RuleHandlerTest {
         DuctTube parent = makeParent(1L, 10L);
         parent.setFull(true);
         DuctTube target = makeTarget(2L, 20L);
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
         RuleHandler handler = new RuleHandler(rule);
 
-        Optional<AssignmentResult> result = handler.handle(ctx);
+        Optional<AssignmentResult> result = handler.handle(route);
 
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals(result.get().getAssignedCount(), 0);
@@ -250,9 +249,9 @@ public class RuleHandlerTest {
         parent.set_new(false);  // parent ESISTENTE
         DuctTube target = makeTarget(2L, 20L);
         target.set_new(true);   // target NUOVO
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
 
-        Optional<AssignmentResult> result = new RuleHandler(rule).handle(ctx);
+        Optional<AssignmentResult> result = new RuleHandler(rule).handle(route);
 
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals(result.get().getAssignedCount(), 1);
@@ -266,9 +265,9 @@ public class RuleHandlerTest {
         parent.set_new(true);   // parent NUOVO
         DuctTube target = makeTarget(2L, 20L);
         target.set_new(false);  // target ESISTENTE
-        AssignmentContext ctx = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
+        UndergroundRoute route = buildCtx(new HashSet<>(Arrays.asList(parent, target)));
 
-        Optional<AssignmentResult> result = new RuleHandler(rule).handle(ctx);
+        Optional<AssignmentResult> result = new RuleHandler(rule).handle(route);
 
         Assert.assertTrue(result.isPresent());
         Assert.assertEquals(result.get().getAssignedCount(), 1);

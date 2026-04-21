@@ -1,10 +1,10 @@
-package com.geowebframework.underPiping.procedure;
+package com.geowebframework.pipeLaying.procedure;
 
-import com.geowebframework.underPiping.model.AssignmentResult;
-import com.geowebframework.underPiping.model.ConfigRule;
-import com.geowebframework.underPiping.model.UndergroundRoute;
-import com.geowebframework.underPiping.procedure.chain.RuleChainBuilder;
-import com.geowebframework.underPiping.procedure.chain.RuleHandler;
+import com.geowebframework.pipeLaying.model.AssignmentResult;
+import com.geowebframework.pipeLaying.model.ConfigRule;
+import com.geowebframework.pipeLaying.model.UndergroundRoute;
+import com.geowebframework.pipeLaying.procedure.chain.RuleChainBuilder;
+import com.geowebframework.pipeLaying.procedure.chain.RuleHandler;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -18,15 +18,15 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class UnderPipingProcedureTest {
+public class PipeLayingProcedureTest {
 
     @Mock private RuleChainBuilder ruleChainBuilder;
-    @InjectMocks private UnderPipingProcedure underPipingProcedure;
+    @InjectMocks private PipeLayingProcedure pipeLayingProcedure;
 
     @BeforeMethod
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        underPipingProcedure = new UnderPipingProcedure(ruleChainBuilder);
+        pipeLayingProcedure = new PipeLayingProcedure(ruleChainBuilder);
     }
 
 
@@ -35,7 +35,7 @@ public class UnderPipingProcedureTest {
         UndergroundRoute route = new UndergroundRoute();
         when(ruleChainBuilder.build(any(), any())).thenReturn(Optional.empty());
 
-        Optional<AssignmentResult> result = underPipingProcedure.execute(route, Collections.emptyList());
+        Optional<AssignmentResult> result = pipeLayingProcedure.execute(route, Collections.emptyList());
 
         Assert.assertFalse(result.isPresent());
         verify(ruleChainBuilder).build(Collections.emptyList(), route);
@@ -51,10 +51,10 @@ public class UnderPipingProcedureTest {
         when(ruleChainBuilder.build(Collections.singletonList(rule), route)).thenReturn(Optional.of(handler));
         when(handler.handle(any())).thenReturn(Optional.of(expected));
 
-        Optional<AssignmentResult> result = underPipingProcedure.execute(route, Collections.singletonList(rule));
+        Optional<AssignmentResult> result = pipeLayingProcedure.execute(route, Collections.singletonList(rule));
 
         Assert.assertEquals(result.get(), expected);
-        verify(handler).handle(argThat(ctx -> ctx.getTratta() == route));
+        verify(handler).handle(argThat(ctx -> ctx == route));
     }
 
     @Test(description = "Chain presente ma handler ritorna empty: il risultato è Optional.empty")
@@ -65,7 +65,7 @@ public class UnderPipingProcedureTest {
         when(ruleChainBuilder.build(any(), any())).thenReturn(Optional.of(handler));
         when(handler.handle(any())).thenReturn(Optional.empty());
 
-        Optional<AssignmentResult> result = underPipingProcedure.execute(route, Collections.singletonList(new ConfigRule()));
+        Optional<AssignmentResult> result = pipeLayingProcedure.execute(route, Collections.singletonList(new ConfigRule()));
 
         Assert.assertFalse(result.isPresent());
     }

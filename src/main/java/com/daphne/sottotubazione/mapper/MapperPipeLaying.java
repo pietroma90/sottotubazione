@@ -1,8 +1,8 @@
-package com.geowebframework.underPiping.mapper;
+package com.geowebframework.pipeLaying.mapper;
 
-import com.geowebframework.underPiping.model.ConfigRule;
-import com.geowebframework.underPiping.model.DuctTube;
-import com.geowebframework.underPiping.model.UndergroundRoute;
+import com.geowebframework.pipeLaying.model.ConfigRule;
+import com.geowebframework.pipeLaying.model.DuctTube;
+import com.geowebframework.pipeLaying.model.UndergroundRoute;
 import it.eagleprojects.gisfocommons.typehandler.BigIntArrayTypeHandler;
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;
 import org.apache.ibatis.annotations.Param;
@@ -12,7 +12,7 @@ import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
-public interface MapperUnderPiping {
+public interface MapperPipeLaying {
 
     @Select("select t.pk_lines_products                                          as id, " +
             "       t.fk_lines_trenches, " +
@@ -53,7 +53,7 @@ public interface MapperUnderPiping {
             "where t.drawing = #{drawing} " +
             "and t.occupato = 0 " +
             "and t.fk_lines_trenches is not null")
-    List<DuctTube> findNuoviNonOccupatiByTratta(@Param("drawing") Long drawing);
+    List<DuctTube> getDuctTubeByDrawing(@Param("drawing") Long drawing);
 
 
     @Select("select distinct t.pk_prj_lines_trenches , t.name, t.trenches_types " +

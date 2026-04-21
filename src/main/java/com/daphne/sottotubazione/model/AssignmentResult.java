@@ -1,13 +1,16 @@
-package com.geowebframework.underPiping.model;
+package com.geowebframework.pipeLaying.model;
 
 import it.eagleprojects.gisfocommons.utils.Message;
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @NoArgsConstructor
 @Getter
@@ -17,7 +20,7 @@ public class AssignmentResult {
     private Message message = new Message();
     private int assignedCount = 0;
     private int skippedCount = 0;
-    protected HashMap<String, List<RowUpdateData>> massiveValueToUpdate = new HashMap<>();
+    private Map<String, List<RowUpdateData>> massiveValueToUpdate = new HashMap<>();
 
     public void addLog(String log) {
         message.addToWarning(log);

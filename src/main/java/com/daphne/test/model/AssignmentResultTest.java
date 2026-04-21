@@ -1,4 +1,4 @@
-package com.geowebframework.underPiping.model;
+package com.geowebframework.pipeLaying.model;
 
 import it.eagleprojects.gisfocommons.utils.RowUpdateData;
 import org.testng.Assert;
